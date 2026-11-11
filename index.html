@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout : une seule colonne pensée pour le téléphone. Les plantes à arroser en haut,
+   chaque carte porte une jauge de réserve d'eau qui se vide jusqu'au prochain arrosage. */
+:root {
+  --bg: #eef2ee;
+  --surface: #ffffff;
+  --ink: #16241c;
+  --muted: #5c6b62;
+  --line: #d5ddd6;
+  --leaf: #1f6b45;
+  --on-leaf: #ffffff;
+  --water: #2577b8;
+  --late: #b3402e;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Figtree", -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1713; --surface: #18231d; --ink: #e6efe9; --muted: #94a69b;
+    --line: #2a3a31; --leaf: #5fc08c; --on-leaf: #0f1713; --water: #62aee6; --late: #ef8672;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1713; --surface: #18231d; --ink: #e6efe9; --muted: #94a69b;
+  --line: #2a3a31; --leaf: #5fc08c; --on-leaf: #0f1713; --water: #62aee6; --late: #ef8672;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; }
+
+.app { max-width: 520px; margin: 0 auto; padding: 20px 16px 112px; display: flex; flex-direction: column; gap: 20px; }
+
+header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.date { color: var(--muted); font-size: 14px; margin: 0 0 2px; text-transform: capitalize; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.season { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.icon-btn { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.icon-btn svg { width: 20px; height: 20px; }
+
+.notice { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 12px 14px; font-size: 14px; color: var(--muted); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 6px 0; color: var(--leaf); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+section { display: flex; flex-direction: column; gap: 10px; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: .02em; color: var(--muted); margin: 0; display: flex; justify-content: space-between; }
+h2 span { font-variant-numeric: tabular-nums; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.card.due { border-left: 5px solid var(--water); }
+.card.late { border-left: 5px solid var(--late); }
+.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.open { background: none; border: 0; padding: 0; text-align: left; min-width: 0; flex: 1; }
+.name { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; display: block; }
+.meta { color: var(--muted); font-size: 14px; display: block; overflow-wrap: anywhere; }
+.pill { flex: none; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; font-variant-numeric: tabular-nums; border: 1px solid var(--line); color: var(--muted); }
+.due .pill { color: var(--water); border-color: var(--water); }
+.late .pill { color: var(--late); border-color: var(--late); }
+
+.gauge { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.gauge i { display: block; height: 100%; background: var(--water); border-radius: 999px; }
+.gauge-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: -6px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border-radius: 12px; border: 1px solid var(--line); background: var(--surface); padding: 11px 14px; font-weight: 600; min-height: 44px; }
+.btn.primary { background: var(--leaf); border-color: var(--leaf); color: var(--on-leaf); flex: 1; }
+.btn.danger { color: var(--late); border-color: var(--late); }
+.btn.small { padding: 8px 12px; min-height: 40px; font-size: 14px; }
+
+.empty { text-align: left; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+
+.add-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px 20px; background: linear-gradient(to top, var(--bg) 70%, transparent); display: flex; justify-content: center; }
+.add-bar .btn { width: 100%; max-width: 488px; }
+
+.toast { position: fixed; left: 16px; right: 16px; bottom: 92px; max-width: 488px; margin: 0 auto; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 15px; }
+.toast[hidden] { display: none; }
+.toast button { background: none; border: 0; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
+
+dialog { border: 0; padding: 0; background: var(--surface); color: var(--ink); width: 100%; max-width: 520px; margin: auto auto 0; border-radius: 20px 20px 0 0; max-height: 92%; }
+dialog::backdrop { background: rgba(8, 16, 12, .55); }
+.sheet { padding: 18px 16px 24px; display: flex; flex-direction: column; gap: 14px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sheet h3 { font-family: var(--font-display); font-size: 22px; margin: 0; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field small { color: var(--muted); font-size: 13px; }
+.field input, .field select, .field textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 11px 12px; width: 100%; min-height: 44px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tip { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
+.history { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.history li { font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.error { color: var(--late); font-size: 14px; margin: 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+@media (prefers-reduced-motion: no-preference) { .gauge i { transition: width .4s ease; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <p class="date" id="date"></p>
+      <h1 id="summary"></h1>
+      <span class="season" id="season"></span>
+    </div>
+    <button class="icon-btn" id="open-settings" aria-label="Réglages et sauvegarde">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+    </button>
+  </header>
+  <div id="notice"></div>
+  <main id="list" style="display:flex;flex-direction:column;gap:20px"></main>
+</div>
+
+<div class="add-bar"><button class="btn primary" id="add">Ajouter une plante</button></div>
+<div class="toast" id="toast" hidden role="status"><span id="toast-text"></span><button id="undo">Annuler</button></div>
+
+<dialog id="plant-dialog" aria-labelledby="plant-title">
+  <form class="sheet" id="plant-form" novalidate>
+    <div class="sheet-head"><h3 id="plant-title">Nouvelle plante</h3><button type="button" class="btn small" data-close>Fermer</button></div>
+    <div class="field"><label for="f-species">Type de plante</label>
+      <select id="f-species"></select>
+      <small>Le type préremplit le rythme d'arrosage. Tu peux l'ajuster ensuite.</small></div>
+    <div class="tip" id="f-tip" hidden></div>
+    <div class="field"><label for="f-name">Nom</label><input id="f-name" maxlength="40" autocomplete="off" placeholder="Monstera du salon"></div>
+    <div class="field"><label for="f-room">Pièce (facultatif)</label><input id="f-room" maxlength="30" autocomplete="off" placeholder="Salon"></div>
+    <div class="row">
+      <div class="field"><label for="f-summer">Été, tous les (jours)</label><input id="f-summer" type="number" inputmode="numeric" min="1" max="120"></div>
+      <div class="field"><label for="f-winter">Hiver, tous les (jours)</label><input id="f-winter" type="number" inputmode="numeric" min="1" max="120"></div>
+    </div>
+    <div class="field"><label for="f-last">Dernier arrosage</label><input id="f-last" type="date"></div>
+    <p class="error" id="f-error" hidden></p>
+    <div id="f-history-wrap" hidden><div class="field"><label>Derniers arrosages</label><ul class="history" id="f-history"></ul></div></div>
+    <div class="actions">
+      <button type="submit" class="btn primary">Enregistrer</button>
+      <button type="button" class="btn danger" id="f-delete" hidden>Supprimer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="settings-dialog" aria-labelledby="settings-title">
+  <div class="sheet">
+    <div class="sheet-head"><h3 id="settings-title">Réglages</h3><button type="button" class="btn small" data-close>Fermer</button></div>
+    <div class="tip"><strong>Notifications.</strong> Cette version de test ne peut pas en envoyer. Elles arrivent avec la version installée sur ton serveur. En attendant, ouvre l'app pour voir ce qui est à arroser.</div>
+    <div class="tip"><strong>Rythme saisonnier.</strong> D'octobre à mars, l'app applique le rythme d'hiver de chaque plante. D'avril à septembre, le rythme d'été.</div>
+    <hr>
+    <div class="field"><label for="s-data">Sauvegarde</label>
+      <small>Tes plantes sont enregistrées dans ce navigateur. Copie-les pour les garder ou les transférer.</small>
+      <textarea id="s-data" rows="4" spellcheck="false" placeholder="Colle ici une sauvegarde pour l'importer"></textarea></div>
+    <p class="error" id="s-msg" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" id="s-export">Copier mes plantes</button>
+      <button type="button" class="btn" id="s-import">Importer</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ---------- Données de référence : rythme d'arrosage en jours (été, hiver) ---------- */
+const SPECIES = [
+  ["Monstera", 7, 14, "Lumière vive sans soleil direct. Laisse sécher les 3 premiers cm de terre."],
+  ["Pothos", 7, 12, "Tolère peu de lumière. Les feuilles qui ramollissent signalent la soif."],
+  ["Philodendron", 7, 12, "Lumière indirecte. Laisse sécher la surface entre deux arrosages."],
+  ["Ficus lyrata", 7, 12, "Beaucoup de lumière, pas de courant d'air. N'aime pas être déplacé."],
+  ["Caoutchouc (Ficus elastica)", 9, 16, "Lumière vive. Laisse sécher la moitié du pot."],
+  ["Sansevieria", 14, 30, "Supporte l'oubli. Trop d'eau est le seul vrai risque."],
+  ["Zamioculcas (ZZ)", 14, 30, "Stocke l'eau dans ses rhizomes. Attends que le pot soit sec."],
+  ["Calathea", 5, 8, "Terre toujours légèrement humide, eau peu calcaire, air humide."],
+  ["Spathiphyllum", 5, 8, "S'affaisse quand il a soif et se redresse après l'arrosage."],
+  ["Fougère", 4, 6, "Ne doit jamais sécher complètement. Aime l'humidité."],
+  ["Pilea", 7, 12, "Lumière vive. Tourne le pot pour une pousse régulière."],
+  ["Chlorophytum", 7, 12, "Facile. Les pointes brunes viennent souvent du calcaire."],
+  ["Dracaena", 10, 18, "Laisse bien sécher. Sensible au fluor de l'eau du robinet."],
+  ["Yucca", 12, 25, "Plein soleil. Arrosage copieux mais espacé."],
+  ["Orchidée (Phalaenopsis)", 7, 10, "Trempe le pot 10 minutes puis laisse égoutter. Racines grises = soif."],
+  ["Aloe vera", 14, 30, "Plein soleil. Terre complètement sèche entre deux arrosages."],
+  ["Succulente", 12, 30, "Beaucoup de soleil. Arrose à fond puis laisse sécher entièrement."],
+  ["Cactus", 14, 40, "Presque pas d'eau en hiver. Plein soleil."],
+  ["Olivier en pot", 7, 14, "Maximum de lumière. Laisse sécher en surface."],
+  ["Aromatiques (basilic, menthe)", 2, 3, "Terre fraîche en permanence, beaucoup de lumière."],
+  ["Autre", 7, 10, "Avant d'arroser, enfonce un doigt dans la terre : sèche sur 2 à 3 cm, tu peux y aller."]
+];
+
+/* ---------- Dates (jours entiers, heure locale) ---------- */
+const DAY = 86400000;
+function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function todayIso() { return isoOf(new Date()); }
+function dayNum(iso) { const p = iso.split("-").map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / DAY); }
+function isoFromDay(n) { const d = new Date(n * DAY); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); }
+function isWinter(iso) { const m = Number(iso.split("-")[1]); return m >= 10 || m <= 3; }
+function shortDate(iso) { const p = iso.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("fr-BE", { day: "numeric", month: "short" }); }
+
+/* ---------- Logique d'arrosage ---------- */
+function intervalOf(p, today) { return isWinter(today) ? p.winter : p.summer; }
+function dueDay(p, today) {
+  const base = dayNum(p.last) + intervalOf(p, today);
+  return p.snooze ? Math.max(base, dayNum(p.snooze)) : base;
+}
+function statusOf(p, today) {
+  const due = dueDay(p, today), t = dayNum(today), last = dayNum(p.last);
+  const delta = due - t;
+  const span = Math.max(1, due - last);
+  const reserve = Math.max(0, Math.min(1, delta / span));
+  return { delta, reserve, kind: delta < 0 ? "late" : delta === 0 ? "due" : "later" };
+}
+function deltaText(delta) {
+  if (delta < -1) return "en retard de " + (-delta) + " j";
+  if (delta === -1) return "en retard d'1 j";
+  if (delta === 0) return "aujourd'hui";
+  if (delta === 1) return "demain";
+  return "dans " + delta + " j";
+}
+
+/* ---------- Stockage (à remplacer par Supabase dans la version hébergée) ---------- */
+const KEY = "basile.v1";
+const store = {
+  load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } },
+  save(data) { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* stockage indisponible : l'app reste utilisable pour la session */ } }
+};
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function examples() {
+  const t = dayNum(todayIso());
+  const mk = (name, room, sp, ago) => { const s = SPECIES.find(x => x[0] === sp); return { id: uid(), name, room, species: sp, summer: s[1], winter: s[2], last: isoFromDay(t - ago), snooze: null, history: [isoFromDay(t - ago)], example: true }; };
+  const w = isWinter(todayIso());
+  return [mk("Calathea", "Chambre", "Calathea", w ? 10 : 7), mk("Monstera", "Salon", "Monstera", w ? 14 : 7), mk("Sansevieria", "Bureau", "Sansevieria", 6)];
+}
+function validPlant(p) {
+  return p && typeof p.name === "string" && p.name.trim() && Number.isInteger(p.summer) && p.summer > 0 && Number.isInteger(p.winter) && p.winter > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.last || "");
+}
+function cleanPlant(p) {
+  return { id: String(p.id || uid()), name: p.name.trim().slice(0, 40), room: String(p.room || "").slice(0, 30), species: String(p.species || "Autre"),
+    summer: p.summer, winter: p.winter, last: p.last, snooze: /^\d{4}-\d{2}-\d{2}$/.test(p.snooze || "") ? p.snooze : null,
+    history: Array.isArray(p.history) ? p.history.filter(h => /^\d{4}-\d{2}-\d{2}$/.test(h)).slice(-12) : [p.last], example: !!p.example };
+}
+let state = store.load();
+if (!state || !Array.isArray(state.plants)) state = { plants: examples() };
+else state.plants = state.plants.filter(validPlant).map(cleanPlant);
+let undoSnapshot = null, toastTimer = null, editingId = null, deleteArmed = false;
+
+/* ---------- Rendu ---------- */
+const $ = id => document.getElementById(id);
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function card(p, today) {
+  const s = statusOf(p, today);
+  const meta = [p.room, "tous les " + intervalOf(p, today) + " j"].filter(Boolean).join(" · ");
+  const acts = s.kind === "later"
+    ? '<button class="btn small" data-act="water" data-id="' + esc(p.id) + '">Arrosée en avance</button>'
+    : '<button class="btn primary" data-act="water" data-id="' + esc(p.id) + '">Arrosée</button><button class="btn" data-act="snooze" data-id="' + esc(p.id) + '">Terre encore humide, +2 j</button>';
+  return '<article class="card ' + s.kind + '">' +
+    '<div class="card-top"><button class="open" data-act="edit" data-id="' + esc(p.id) + '" aria-label="Modifier ' + esc(p.name) + '"><span class="name">' + esc(p.name) + '</span><span class="meta">' + esc(meta) + '</span></button>' +
+    '<span class="pill">' + deltaText(s.delta) + '</span></div>' +
+    '<div class="gauge" role="img" aria-label="Réserve d\'eau estimée : ' + Math.round(s.reserve * 100) + ' %"><i style="width:' + Math.round(s.reserve * 100) + '%"></i></div>' +
+    '<div class="gauge-label"><span>arrosée le ' + shortDate(p.last) + '</span><span>réserve ' + Math.round(s.reserve * 100) + ' %</span></div>' +
+    '<div class="actions">' + acts + '</div></article>';
+}
+
+function render() {
+  const today = todayIso();
+  const sorted = state.plants.slice().sort((a, b) => dueDay(a, today) - dueDay(b, today) || a.name.localeCompare(b.name, "fr"));
+  const now = sorted.filter(p => statusOf(p, today).delta <= 0);
+  const later = sorted.filter(p => statusOf(p, today).delta > 0);
+
+  $("date").textContent = new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" });
+  $("summary").textContent = !state.plants.length ? "Aucune plante pour l'instant"
+    : now.length === 0 ? "Rien à arroser aujourd'hui"
+    : now.length === 1 ? "1 plante à arroser" : now.length + " plantes à arroser";
+  $("season").textContent = isWinter(today) ? "Rythme d'hiver, arrosages espacés" : "Rythme d'été";
+
+  $("notice").innerHTML = state.plants.some(p => p.example)
+    ? '<div class="notice"><span>Ces plantes marquées en exemple montrent le fonctionnement.</span><button class="link-btn" data-act="clear-examples">Retirer les exemples</button></div>' : "";
+
+  let html = "";
+  if (!state.plants.length) html = '<div class="empty">Ajoute ta première plante avec le bouton en bas. Choisis son type et l\'app propose un rythme d\'arrosage.</div>';
+  if (now.length) html += '<section><h2>À arroser <span>' + now.length + '</span></h2>' + now.map(p => card(p, today)).join("") + '</section>';
+  if (later.length) html += '<section><h2>Plus tard <span>' + later.length + '</span></h2>' + later.map(p => card(p, today)).join("") + '</section>';
+  $("list").innerHTML = html;
+}
+function commit() { store.save(state); render(); }
+
+/* ---------- Actions ---------- */
+function showToast(text) {
+  $("toast-text").textContent = text; $("toast").hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("toast").hidden = true; undoSnapshot = null; }, 6000);
+}
+function remember() { undoSnapshot = JSON.stringify(state); }
+function water(id) {
+  const p = state.plants.find(x => x.id === id); if (!p) return;
+  remember();
+  const t = todayIso();
+  p.last = t; p.snooze = null;
+  if (p.history[p.history.length - 1] !== t) p.history.push(t);
+  p.history = p.history.slice(-12);
+  commit();
+  showToast(p.name + " arrosée. Prochain arrosage " + deltaText(statusOf(p, t).delta) + ".");
+}
+function snooze(id) {
+  const p = state.plants.find(x => x.id === id); if (!p) return;
+  remember();
+  p.snooze = isoFromDay(dayNum(todayIso()) + 2);
+  commit();
+  showToast(p.name + " reportée de 2 jours.");
+}
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id;
+  if (act === "water") water(id);
+  else if (act === "snooze") snooze(id);
+  else if (act === "edit") openPlant(id);
+  else if (act === "clear-examples") { remember(); state.plants = state.plants.filter(p => !p.example); commit(); showToast("Exemples retirés."); }
+});
+$("undo").addEventListener("click", () => {
+  if (!undoSnapshot) return;
+  state = JSON.parse(undoSnapshot); undoSnapshot = null; $("toast").hidden = true; commit();
+});
+document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
+document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
+
+/* ---------- Fiche plante ---------- */
+$("f-species").innerHTML = SPECIES.map(s => '<option value="' + esc(s[0]) + '">' + esc(s[0]) + '</option>').join("");
+function showTip(name) { const s = SPECIES.find(x => x[0] === name); $("f-tip").hidden = !s; if (s) $("f-tip").textContent = s[3]; }
+function openPlant(id) {
+  const p = id ? state.plants.find(x => x.id === id) : null;
+  editingId = p ? p.id : null; deleteArmed = false;
+  $("plant-title").textContent = p ? "Modifier la plante" : "Nouvelle plante";
+  const sp = p ? (SPECIES.some(s => s[0] === p.species) ? p.species : "Autre") : SPECIES[0][0];
+  const ref = SPECIES.find(s => s[0] === sp);
+  $("f-species").value = sp;
+  $("f-name").value = p ? p.name : "";
+  $("f-room").value = p ? p.room : "";
+  $("f-summer").value = p ? p.summer : ref[1];
+  $("f-winter").value = p ? p.winter : ref[2];
+  $("f-last").value = p ? p.last : todayIso();
+  $("f-last").max = todayIso();
+  $("f-error").hidden = true;
+  $("f-delete").hidden = !p; $("f-delete").textContent = "Supprimer";
+  $("f-history-wrap").hidden = !p;
+  if (p) $("f-history").innerHTML = p.history.slice().reverse().map(h => "<li>" + shortDate(h) + "</li>").join("");
+  showTip(sp);
+  $("plant-dialog").showModal();
+}
+$("f-species").addEventListener("change", () => {
+  const s = SPECIES.find(x => x[0] === $("f-species").value);
+  $("f-summer").value = s[1]; $("f-winter").value = s[2]; showTip(s[0]);
+});
+$("add").addEventListener("click", () => openPlant(null));
+$("plant-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const species = $("f-species").value;
+  const name = $("f-name").value.trim() || (species === "Autre" ? "" : species);
+  const summer = parseInt($("f-summer").value, 10), winter = parseInt($("f-winter").value, 10), last = $("f-last").value;
+  let err = "";
+  if (!name) err = "Donne un nom à ta plante.";
+  else if (!(summer >= 1 && summer <= 120) || !(winter >= 1 && winter <= 120)) err = "Le rythme doit être compris entre 1 et 120 jours.";
+  else if (!/^\d{4}-\d{2}-\d{2}$/.test(last) || dayNum(last) > dayNum(todayIso())) err = "Choisis une date de dernier arrosage, aujourd'hui au plus tard.";
+  if (err) { $("f-error").textContent = err; $("f-error").hidden = false; return; }
+  const room = $("f-room").value.trim();
+  if (editingId) {
+    const p = state.plants.find(x => x.id === editingId);
+    if (p.last !== last) { p.snooze = null; p.history = p.history.filter(h => h !== p.last); p.history.push(last); p.history.sort(); p.history = p.history.slice(-12); }
+    Object.assign(p, { name, room, species, summer, winter, last, example: false });
+  } else {
+    state.plants.push({ id: uid(), name, room, species, summer, winter, last, snooze: null, history: [last], example: false });
+  }
+  $("plant-dialog").close(); commit();
+});
+$("f-delete").addEventListener("click", () => {
+  if (!deleteArmed) { deleteArmed = true; $("f-delete").textContent = "Confirmer la suppression"; return; }
+  remember();
+  const p = state.plants.find(x => x.id === editingId);
+  state.plants = state.plants.filter(x => x.id !== editingId);
+  $("plant-dialog").close(); commit();
+  showToast((p ? p.name : "Plante") + " supprimée.");
+});
+
+/* ---------- Réglages : sauvegarde ---------- */
+function settingsMsg(text) { $("s-msg").textContent = text; $("s-msg").hidden = false; }
+$("open-settings").addEventListener("click", () => { $("s-msg").hidden = true; $("s-data").value = ""; $("settings-dialog").showModal(); });
+$("s-export").addEventListener("click", () => {
+  const json = JSON.stringify({ plants: state.plants });
+  $("s-data").value = json;
+  const done = () => settingsMsg("Sauvegarde copiée. Garde-la dans une note.");
+  const manual = () => { $("s-data").select(); settingsMsg("Copie le texte sélectionné ci-dessus."); };
+  try { navigator.clipboard.writeText(json).then(done, manual); } catch (e) { manual(); }
+});
+$("s-import").addEventListener("click", () => {
+  let data; try { data = JSON.parse($("s-data").value); } catch (e) { data = null; }
+  const plants = data && Array.isArray(data.plants) ? data.plants.filter(validPlant).map(cleanPlant) : [];
+  if (!plants.length) { settingsMsg("Ce texte n'est pas une sauvegarde valide. Colle le texte obtenu avec « Copier mes plantes »."); return; }
+  remember(); state = { plants }; $("settings-dialog").close(); commit();
+  showToast(plants.length + (plants.length > 1 ? " plantes importées." : " plante importée."));
+});
+
+render();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+</script>
+</body>
+</html>
