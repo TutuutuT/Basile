@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Basile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Layout : une seule colonne pensée pour le téléphone. Les plantes à arroser en haut,
-   chaque carte porte une jauge de réserve d'eau qui se vide jusqu'au prochain arrosage. */
+/* Layout : une seule colonne pensée pour le téléphone. Deux vues (Aujourd'hui, Mes plantes)
+   et des feuilles qui montent du bas pour la fiche d'une plante, le formulaire et les réglages. */
 :root {
   --bg: #eef2ee;
   --surface: #ffffff;
@@ -46,19 +46,22 @@ body {
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--water); outline-offset: 2px; }
+[hidden] { display: none !important; }
 
-.app { max-width: 520px; margin: 0 auto; padding: 20px 16px 112px; display: flex; flex-direction: column; gap: 20px; }
+.app { max-width: 520px; margin: 0 auto; padding: 20px 16px 120px; display: flex; flex-direction: column; gap: 20px; }
 
 header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .date { color: var(--muted); font-size: 14px; margin: 0 0 2px; text-transform: capitalize; }
 h1 { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.1; margin: 0; text-wrap: balance; }
-.season { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { font-size: 13px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
 .icon-btn { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
 .icon-btn svg { width: 20px; height: 20px; }
 
 .notice { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 12px 14px; font-size: 14px; color: var(--muted); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-.link-btn { background: none; border: 0; padding: 6px 0; color: var(--leaf); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.link-btn { background: none; border: 0; padding: 6px 0; color: var(--leaf); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 
+main { display: flex; flex-direction: column; gap: 20px; }
 section { display: flex; flex-direction: column; gap: 10px; }
 h2 { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: .02em; color: var(--muted); margin: 0; display: flex; justify-content: space-between; }
 h2 span { font-variant-numeric: tabular-nums; }
@@ -66,48 +69,92 @@ h2 span { font-variant-numeric: tabular-nums; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .card.due { border-left: 5px solid var(--water); }
 .card.late { border-left: 5px solid var(--late); }
-.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-.open { background: none; border: 0; padding: 0; text-align: left; min-width: 0; flex: 1; }
+.open { background: none; border: 0; padding: 0; text-align: left; min-width: 0; flex: 1; display: flex; gap: 12px; align-items: center; }
+.open > span:last-child { min-width: 0; }
 .name { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; display: block; }
 .meta { color: var(--muted); font-size: 14px; display: block; overflow-wrap: anywhere; }
+.thumb { flex: none; width: 48px; height: 48px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: var(--leaf); overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pill { flex: none; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 3px 10px; white-space: nowrap; font-variant-numeric: tabular-nums; border: 1px solid var(--line); color: var(--muted); }
-.due .pill { color: var(--water); border-color: var(--water); }
-.late .pill { color: var(--late); border-color: var(--late); }
+.pill.due { color: var(--water); border-color: var(--water); }
+.pill.late { color: var(--late); border-color: var(--late); }
+
+.task { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.task-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.task-top strong { font-size: 16px; }
+.task-top small { display: block; color: var(--muted); font-size: 14px; }
 
 .gauge { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
 .gauge i { display: block; height: 100%; background: var(--water); border-radius: 999px; }
-.gauge-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: -6px; }
 
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.actions:empty { display: none; }
 .btn { border-radius: 12px; border: 1px solid var(--line); background: var(--surface); padding: 11px 14px; font-weight: 600; min-height: 44px; }
 .btn.primary { background: var(--leaf); border-color: var(--leaf); color: var(--on-leaf); flex: 1; }
 .btn.danger { color: var(--late); border-color: var(--late); }
 .btn.small { padding: 8px 12px; min-height: 40px; font-size: 14px; }
+.btn:disabled { opacity: .55; cursor: default; }
+
+.rows { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.row-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); text-align: left; }
+.row-item:first-child { border-top: 0; }
+.row-item .grow { flex: 1; min-width: 0; }
 
 .empty { text-align: left; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
 
-.add-bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px 20px; background: linear-gradient(to top, var(--bg) 70%, transparent); display: flex; justify-content: center; }
-.add-bar .btn { width: 100%; max-width: 488px; }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--bg) 75%, transparent); display: flex; justify-content: center; }
+.bar-in { width: 100%; max-width: 488px; display: flex; gap: 8px; }
+.tabs { flex: 1; display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 3px; }
+.tab { border: 0; background: none; border-radius: 11px; min-height: 44px; font-weight: 600; color: var(--muted); }
+.tab[aria-current="page"] { background: var(--leaf); color: var(--on-leaf); }
+.bar .add { flex: none; width: 52px; border-radius: 14px; border: 1px solid var(--leaf); background: var(--surface); color: var(--leaf); font-size: 26px; line-height: 1; font-weight: 600; }
 
-.toast { position: fixed; left: 16px; right: 16px; bottom: 92px; max-width: 488px; margin: 0 auto; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 15px; }
-.toast[hidden] { display: none; }
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 488px; margin: 0 auto; background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 15px; z-index: 5; }
 .toast button { background: none; border: 0; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
 
 dialog { border: 0; padding: 0; background: var(--surface); color: var(--ink); width: 100%; max-width: 520px; margin: auto auto 0; border-radius: 20px 20px 0 0; max-height: 92%; }
 dialog::backdrop { background: rgba(8, 16, 12, .55); }
-.sheet { padding: 18px 16px 24px; display: flex; flex-direction: column; gap: 14px; }
+.sheet { padding: 18px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.sheet h3 { font-family: var(--font-display); font-size: 22px; margin: 0; }
+.sheet h3 { font-family: var(--font-display); font-size: 22px; margin: 0; overflow-wrap: anywhere; }
+.sheet h4 { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: .02em; color: var(--muted); margin: 6px 0 0; }
 .field { display: flex; flex-direction: column; gap: 5px; }
-.field label { font-size: 14px; font-weight: 600; }
-.field small { color: var(--muted); font-size: 13px; }
+.field label, .field .label { font-size: 14px; font-weight: 600; }
+.field small, small.hint { color: var(--muted); font-size: 13px; }
 .field input, .field select, .field textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 11px 12px; width: 100%; min-height: 44px; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; font-size: 15px; }
+.check input { width: 22px; height: 22px; flex: none; accent-color: var(--leaf); }
+.care-row { display: grid; grid-template-columns: 1fr 84px auto; gap: 8px; align-items: center; }
+.care-row input[type="number"] { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 9px 10px; min-height: 44px; width: 100%; }
+.care-row span { color: var(--muted); font-size: 14px; }
+details { border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+details summary { font-weight: 600; min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+details[open] { padding-bottom: 12px; }
+details .inner { display: flex; flex-direction: column; gap: 8px; }
 .tip { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
+.tip strong { color: var(--ink); }
 .history { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .history li { font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .error { color: var(--late); font-size: 14px; margin: 0; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+
+.cover { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block; background: var(--bg); }
+.care-line { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.care-line:first-child { border-top: 0; }
+.care-line .grow { flex: 1; min-width: 0; }
+.care-line small { display: block; color: var(--muted); font-size: 14px; }
+dl.facts { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; font-size: 15px; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.photos button { padding: 0; border: 0; background: none; text-align: left; }
+.photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; }
+.photos small { color: var(--muted); font-size: 12px; }
+.diag { border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 15px; display: flex; flex-direction: column; gap: 6px; }
+.diag ul { margin: 0; padding-left: 20px; }
+.diag small { color: var(--muted); }
+.viewer img { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 12px; background: var(--bg); }
 @media (prefers-reduced-motion: no-preference) { .gauge i { transition: width .4s ease; } }
 </style>
 </head>
@@ -117,35 +164,67 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
     <div>
       <p class="date" id="date"></p>
       <h1 id="summary"></h1>
-      <span class="season" id="season"></span>
+      <div class="chips" id="chips"></div>
     </div>
     <button class="icon-btn" id="open-settings" aria-label="Réglages et sauvegarde">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
     </button>
   </header>
   <div id="notice"></div>
-  <main id="list" style="display:flex;flex-direction:column;gap:20px"></main>
+  <main id="list"></main>
 </div>
 
-<div class="add-bar"><button class="btn primary" id="add">Ajouter une plante</button></div>
+<nav class="bar" aria-label="Navigation">
+  <div class="bar-in">
+    <div class="tabs">
+      <button class="tab" data-act="view" data-view="today">Aujourd'hui</button>
+      <button class="tab" data-act="view" data-view="plants">Mes plantes</button>
+    </div>
+    <button class="add" id="add" aria-label="Ajouter une plante">+</button>
+  </div>
+</nav>
 <div class="toast" id="toast" hidden role="status"><span id="toast-text"></span><button id="undo">Annuler</button></div>
+<input type="file" id="photo-input" accept="image/*" hidden>
+
+<dialog id="sheet-dialog" aria-label="Fiche de la plante"><div class="sheet" id="sheet"></div></dialog>
 
 <dialog id="plant-dialog" aria-labelledby="plant-title">
   <form class="sheet" id="plant-form" novalidate>
     <div class="sheet-head"><h3 id="plant-title">Nouvelle plante</h3><button type="button" class="btn small" data-close>Fermer</button></div>
+    <div class="actions">
+      <button type="button" class="btn" id="f-identify">Identifier avec une photo</button>
+    </div>
+    <div class="tip" id="f-ident" hidden></div>
     <div class="field"><label for="f-species">Type de plante</label>
-      <select id="f-species"></select>
-      <small>Le type préremplit le rythme d'arrosage. Tu peux l'ajuster ensuite.</small></div>
+      <select id="f-species"></select></div>
     <div class="tip" id="f-tip" hidden></div>
     <div class="field"><label for="f-name">Nom</label><input id="f-name" maxlength="40" autocomplete="off" placeholder="Monstera du salon"></div>
     <div class="field"><label for="f-room">Pièce (facultatif)</label><input id="f-room" maxlength="30" autocomplete="off" placeholder="Salon"></div>
     <div class="row">
+      <div class="field"><label for="f-light">Lumière de l'emplacement</label>
+        <select id="f-light"><option value="1">Faible</option><option value="2">Moyenne</option><option value="3">Vive</option><option value="4">Plein soleil</option></select></div>
+      <div class="field"><label for="f-pot">Diamètre du pot (cm)</label><input id="f-pot" type="number" inputmode="numeric" min="5" max="80"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="f-outdoor"> Dehors (balcon, jardin)</label>
+    <div class="row">
       <div class="field"><label for="f-summer">Été, tous les (jours)</label><input id="f-summer" type="number" inputmode="numeric" min="1" max="120"></div>
       <div class="field"><label for="f-winter">Hiver, tous les (jours)</label><input id="f-winter" type="number" inputmode="numeric" min="1" max="120"></div>
     </div>
+    <div class="tip" id="f-suggest"></div>
     <div class="field"><label for="f-last">Dernier arrosage</label><input id="f-last" type="date"></div>
+    <details>
+      <summary>Autres soins</summary>
+      <div class="inner">
+        <div class="care-row"><label class="check"><input type="checkbox" id="f-on-fert"> Engrais</label><input id="f-ev-fert" type="number" inputmode="numeric" min="1" max="365" aria-label="Engrais, tous les combien de jours"><span>jours</span></div>
+        <small class="hint">Rappel d'avril à septembre seulement.</small>
+        <div class="care-row"><label class="check"><input type="checkbox" id="f-on-mist"> Brumiser</label><input id="f-ev-mist" type="number" inputmode="numeric" min="1" max="365" aria-label="Brumisation, tous les combien de jours"><span>jours</span></div>
+        <div class="care-row"><label class="check"><input type="checkbox" id="f-on-clean"> Dépoussiérer</label><input id="f-ev-clean" type="number" inputmode="numeric" min="1" max="365" aria-label="Nettoyage, tous les combien de jours"><span>jours</span></div>
+        <div class="care-row"><label class="check"><input type="checkbox" id="f-on-turn"> Tourner le pot</label><input id="f-ev-turn" type="number" inputmode="numeric" min="1" max="365" aria-label="Rotation, tous les combien de jours"><span>jours</span></div>
+        <div class="care-row"><label class="check"><input type="checkbox" id="f-on-repot"> Rempoter</label><input id="f-ev-repot" type="number" inputmode="numeric" min="6" max="60" aria-label="Rempotage, tous les combien de mois"><span>mois</span></div>
+        <div class="field"><label for="f-repot-last">Dernier rempotage (facultatif)</label><input id="f-repot-last" type="date"><small>Rappel de mars à septembre, la bonne période pour rempoter.</small></div>
+      </div>
+    </details>
     <p class="error" id="f-error" hidden></p>
-    <div id="f-history-wrap" hidden><div class="field"><label>Derniers arrosages</label><ul class="history" id="f-history"></ul></div></div>
     <div class="actions">
       <button type="submit" class="btn primary">Enregistrer</button>
       <button type="button" class="btn danger" id="f-delete" hidden>Supprimer</button>
@@ -153,14 +232,42 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
   </form>
 </dialog>
 
+<dialog id="viewer-dialog" aria-label="Photo">
+  <div class="sheet viewer">
+    <div class="sheet-head"><h3 id="v-date"></h3><button type="button" class="btn small" data-close>Fermer</button></div>
+    <img id="v-img" alt="">
+    <div class="actions">
+      <button type="button" class="btn" id="v-cover">Photo principale</button>
+      <button type="button" class="btn danger" id="v-delete">Supprimer</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="settings-dialog" aria-labelledby="settings-title">
   <div class="sheet">
     <div class="sheet-head"><h3 id="settings-title">Réglages</h3><button type="button" class="btn small" data-close>Fermer</button></div>
-    <div class="tip"><strong>Notifications.</strong> Cette version de test ne peut pas en envoyer. Elles arrivent avec la version installée sur ton serveur. En attendant, ouvre l'app pour voir ce qui est à arroser.</div>
-    <div class="tip"><strong>Rythme saisonnier.</strong> D'octobre à mars, l'app applique le rythme d'hiver de chaque plante. D'avril à septembre, le rythme d'été.</div>
-    <hr>
-    <div class="field"><label for="s-data">Sauvegarde</label>
-      <small>Tes plantes sont enregistrées dans ce navigateur. Copie-les pour les garder ou les transférer.</small>
+
+    <h4>Météo</h4>
+    <label class="check"><input type="checkbox" id="s-wx-on"> Ajuster l'arrosage selon la météo</label>
+    <small class="hint">Par forte chaleur, les arrosages se rapprochent. Pour une plante dehors, une bonne pluie compte comme un arrosage. Données Open-Meteo.</small>
+    <div class="tip" id="s-place"></div>
+    <div class="field"><label for="s-city">Ta ville</label>
+      <div class="actions"><input id="s-city" autocomplete="off" placeholder="Liège" style="flex:1;min-width:0"><button type="button" class="btn" id="s-city-go">Chercher</button></div></div>
+    <div class="actions" id="s-city-results"></div>
+    <button type="button" class="link-btn" id="s-geo">Utiliser ma position</button>
+    <p class="error" id="s-wx-msg" hidden></p>
+
+    <h4>Photos intelligentes</h4>
+    <small class="hint">L'identification et le diagnostic par photo passent par ton serveur, qui garde la clé du modèle de vision. Voir le README pour l'installer.</small>
+    <div class="field"><label for="s-vurl">Adresse de la fonction</label><input id="s-vurl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://ton-serveur/functions/v1/vision"></div>
+    <div class="field"><label for="s-vtoken">Mot de passe de la fonction</label><input id="s-vtoken" type="password" autocomplete="off"></div>
+
+    <h4>Notifications</h4>
+    <div class="tip">Cette version ne peut pas en envoyer. Elles arrivent avec la version installée sur ton serveur. En attendant, ouvre l'app pour voir les soins du jour.</div>
+
+    <h4>Sauvegarde</h4>
+    <div class="field"><label for="s-data">Tes plantes</label>
+      <small>Elles sont enregistrées dans ce navigateur. Copie-les pour les garder ou les transférer. Les photos ne sont pas dans la sauvegarde.</small>
       <textarea id="s-data" rows="4" spellcheck="false" placeholder="Colle ici une sauvegarde pour l'importer"></textarea></div>
     <p class="error" id="s-msg" hidden></p>
     <div class="actions">
@@ -172,158 +279,409 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
 
 <script>
 "use strict";
-/* ---------- Données de référence : rythme d'arrosage en jours (été, hiver) ---------- */
+/* ---------- Données de référence ----------
+   s, w : arrosage en jours (été, hiver) pour un pot de 15 à 20 cm à la lumière de référence L
+   L : lumière de référence (1 faible, 2 moyenne, 3 vive, 4 plein soleil)
+   need : besoin en eau par arrosage (1 peu, 2 normal, 3 beaucoup)
+   fert : engrais en jours (0 = pas de rappel par défaut) ; repot : rempotage en mois
+   mist, clean, turn : soins activés par défaut */
 const SPECIES = [
-  ["Monstera", 7, 14, "Lumière vive sans soleil direct. Laisse sécher les 3 premiers cm de terre."],
-  ["Pothos", 7, 12, "Tolère peu de lumière. Les feuilles qui ramollissent signalent la soif."],
-  ["Philodendron", 7, 12, "Lumière indirecte. Laisse sécher la surface entre deux arrosages."],
-  ["Ficus lyrata", 7, 12, "Beaucoup de lumière, pas de courant d'air. N'aime pas être déplacé."],
-  ["Caoutchouc (Ficus elastica)", 9, 16, "Lumière vive. Laisse sécher la moitié du pot."],
-  ["Sansevieria", 14, 30, "Supporte l'oubli. Trop d'eau est le seul vrai risque."],
-  ["Zamioculcas (ZZ)", 14, 30, "Stocke l'eau dans ses rhizomes. Attends que le pot soit sec."],
-  ["Calathea", 5, 8, "Terre toujours légèrement humide, eau peu calcaire, air humide."],
-  ["Spathiphyllum", 5, 8, "S'affaisse quand il a soif et se redresse après l'arrosage."],
-  ["Fougère", 4, 6, "Ne doit jamais sécher complètement. Aime l'humidité."],
-  ["Pilea", 7, 12, "Lumière vive. Tourne le pot pour une pousse régulière."],
-  ["Chlorophytum", 7, 12, "Facile. Les pointes brunes viennent souvent du calcaire."],
-  ["Dracaena", 10, 18, "Laisse bien sécher. Sensible au fluor de l'eau du robinet."],
-  ["Yucca", 12, 25, "Plein soleil. Arrosage copieux mais espacé."],
-  ["Orchidée (Phalaenopsis)", 7, 10, "Trempe le pot 10 minutes puis laisse égoutter. Racines grises = soif."],
-  ["Aloe vera", 14, 30, "Plein soleil. Terre complètement sèche entre deux arrosages."],
-  ["Succulente", 12, 30, "Beaucoup de soleil. Arrose à fond puis laisse sécher entièrement."],
-  ["Cactus", 14, 40, "Presque pas d'eau en hiver. Plein soleil."],
-  ["Olivier en pot", 7, 14, "Maximum de lumière. Laisse sécher en surface."],
-  ["Aromatiques (basilic, menthe)", 2, 3, "Terre fraîche en permanence, beaucoup de lumière."],
-  ["Autre", 7, 10, "Avant d'arroser, enfonce un doigt dans la terre : sèche sur 2 à 3 cm, tu peux y aller."]
+  { n: "Monstera", s: 7, w: 14, L: 3, need: 2, fert: 30, repot: 24, mist: 1, clean: 1, turn: 0,
+    tip: "Laisse sécher les 3 premiers cm de terre.", light: "Vive, sans soleil direct", hum: "Moyenne à élevée", tox: "Toxique pour chats, chiens et enfants si mâchée" },
+  { n: "Pothos", s: 7, w: 12, L: 2, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 0,
+    tip: "Les feuilles qui ramollissent signalent la soif.", light: "Moyenne, tolère peu de lumière", hum: "Normale", tox: "Toxique pour chats, chiens et enfants si mâché" },
+  { n: "Philodendron", s: 7, w: 12, L: 2, need: 2, fert: 30, repot: 24, mist: 1, clean: 1, turn: 0,
+    tip: "Laisse sécher la surface entre deux arrosages.", light: "Moyenne à vive, indirecte", hum: "Moyenne à élevée", tox: "Toxique pour chats, chiens et enfants si mâché" },
+  { n: "Ficus lyrata", s: 7, w: 12, L: 3, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 0,
+    tip: "Pas de courant d'air. N'aime pas être déplacé.", light: "Vive, beaucoup de lumière", hum: "Moyenne", tox: "Sève irritante, toxique pour chats et chiens" },
+  { n: "Caoutchouc (Ficus elastica)", s: 9, w: 16, L: 3, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 1,
+    tip: "Laisse sécher la moitié du pot.", light: "Vive", hum: "Normale", tox: "Sève irritante, toxique pour chats et chiens" },
+  { n: "Sansevieria", s: 14, w: 30, L: 2, need: 1, fert: 60, repot: 36, mist: 0, clean: 1, turn: 0,
+    tip: "Supporte l'oubli. Trop d'eau est le seul vrai risque.", light: "Faible à vive", hum: "Air sec bien toléré", tox: "Légèrement toxique pour chats et chiens" },
+  { n: "Zamioculcas (ZZ)", s: 14, w: 30, L: 2, need: 1, fert: 60, repot: 36, mist: 0, clean: 1, turn: 0,
+    tip: "Stocke l'eau dans ses rhizomes. Attends que le pot soit sec.", light: "Faible à moyenne", hum: "Air sec bien toléré", tox: "Toxique si ingéré, sève irritante" },
+  { n: "Calathea", s: 5, w: 8, L: 2, need: 3, fert: 30, repot: 24, mist: 1, clean: 1, turn: 0,
+    tip: "Terre toujours légèrement humide, eau peu calcaire.", light: "Moyenne, jamais de soleil direct", hum: "Élevée", tox: "Sans danger pour chats et chiens" },
+  { n: "Spathiphyllum", s: 5, w: 8, L: 2, need: 3, fert: 30, repot: 24, mist: 1, clean: 1, turn: 0,
+    tip: "S'affaisse quand il a soif et se redresse après l'arrosage.", light: "Faible à moyenne", hum: "Moyenne à élevée", tox: "Toxique pour chats, chiens et enfants si mâché" },
+  { n: "Fougère", s: 4, w: 6, L: 2, need: 3, fert: 30, repot: 24, mist: 1, clean: 0, turn: 0,
+    tip: "Ne doit jamais sécher complètement.", light: "Moyenne, sans soleil direct", hum: "Élevée", tox: "La fougère de Boston est sans danger, vérifie pour les autres" },
+  { n: "Pilea", s: 7, w: 12, L: 3, need: 2, fert: 30, repot: 12, mist: 0, clean: 0, turn: 1,
+    tip: "Tourne le pot pour une pousse régulière.", light: "Vive, sans soleil direct", hum: "Normale", tox: "Sans danger pour chats et chiens" },
+  { n: "Chlorophytum", s: 7, w: 12, L: 2, need: 2, fert: 30, repot: 12, mist: 0, clean: 0, turn: 0,
+    tip: "Facile. Les pointes brunes viennent souvent du calcaire.", light: "Moyenne à vive", hum: "Normale", tox: "Sans danger pour chats et chiens" },
+  { n: "Dracaena", s: 10, w: 18, L: 2, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 1,
+    tip: "Laisse bien sécher. Sensible au fluor de l'eau du robinet.", light: "Moyenne à vive", hum: "Normale", tox: "Toxique pour chats et chiens" },
+  { n: "Yucca", s: 12, w: 25, L: 4, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 1,
+    tip: "Arrosage copieux mais espacé.", light: "Plein soleil", hum: "Air sec bien toléré", tox: "Toxique pour chats et chiens" },
+  { n: "Orchidée (Phalaenopsis)", s: 7, w: 10, L: 3, need: 2, soak: 1, fert: 14, repot: 24, mist: 0, clean: 0, turn: 0,
+    tip: "Trempe le pot 10 minutes puis laisse égoutter. Racines grises = soif.", light: "Vive, sans soleil direct", hum: "Moyenne à élevée", tox: "Sans danger pour chats et chiens" },
+  { n: "Aloe vera", s: 14, w: 30, L: 4, need: 1, fert: 60, repot: 24, mist: 0, clean: 0, turn: 1,
+    tip: "Terre complètement sèche entre deux arrosages.", light: "Plein soleil", hum: "Air sec", tox: "Toxique pour chats et chiens" },
+  { n: "Succulente", s: 12, w: 30, L: 4, need: 1, fert: 60, repot: 24, mist: 0, clean: 0, turn: 1,
+    tip: "Arrose à fond puis laisse sécher entièrement.", light: "Plein soleil", hum: "Air sec", tox: "Variable selon l'espèce, à vérifier" },
+  { n: "Cactus", s: 14, w: 40, L: 4, need: 1, fert: 60, repot: 36, mist: 0, clean: 0, turn: 1,
+    tip: "Presque pas d'eau en hiver.", light: "Plein soleil", hum: "Air sec", tox: "Non toxique, attention aux épines" },
+  { n: "Olivier en pot", s: 7, w: 14, L: 4, need: 2, fert: 30, repot: 36, mist: 0, clean: 0, turn: 0,
+    tip: "Laisse sécher en surface.", light: "Plein soleil, maximum de lumière", hum: "Air sec bien toléré", tox: "Sans danger pour chats et chiens" },
+  { n: "Aromatiques (basilic, menthe)", s: 2, w: 3, L: 4, need: 3, fert: 14, repot: 12, mist: 0, clean: 0, turn: 0,
+    tip: "Terre fraîche en permanence.", light: "Plein soleil ou très vive", hum: "Normale", tox: "Basilic sans danger. Menthe à éviter en quantité pour chats et chiens" },
+  { n: "Autre", s: 7, w: 10, L: 2, need: 2, fert: 30, repot: 24, mist: 0, clean: 1, turn: 0,
+    tip: "Avant d'arroser, enfonce un doigt dans la terre : sèche sur 2 à 3 cm, tu peux y aller.", light: "À vérifier selon l'espèce", hum: "À vérifier selon l'espèce", tox: "À vérifier selon l'espèce" }
 ];
+const LIGHTS = ["", "Faible", "Moyenne", "Vive", "Plein soleil"];
+/* Soins. snooze : report en jours du bouton « Plus tard ». every : rythme par défaut (jours, mois pour le rempotage). */
+const CARES = {
+  water: { label: "Arrosage", verb: "Arroser", done: "arrosée", snooze: 2 },
+  mist: { label: "Brumisation", verb: "Brumiser", done: "brumisée", snooze: 1, every: 3 },
+  fert: { label: "Engrais", verb: "Donner de l'engrais", done: "nourrie", snooze: 7, every: 30, season: [4, 9] },
+  clean: { label: "Nettoyage", verb: "Dépoussiérer les feuilles", done: "dépoussiérée", snooze: 3, every: 30 },
+  turn: { label: "Rotation", verb: "Tourner le pot", done: "tournée", snooze: 3, every: 14 },
+  repot: { label: "Rempotage", verb: "Rempoter", done: "rempotée", snooze: 30, every: 24, months: true, season: [3, 9] }
+};
+const CARE_KEYS = Object.keys(CARES);
+const EXTRA_KEYS = CARE_KEYS.filter(k => k !== "water");
+function speciesOf(name) { return SPECIES.find(s => s.n === name) || SPECIES[SPECIES.length - 1]; }
 
 /* ---------- Dates (jours entiers, heure locale) ---------- */
 const DAY = 86400000;
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function todayIso() { return isoOf(new Date()); }
 function dayNum(iso) { const p = iso.split("-").map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / DAY); }
 function isoFromDay(n) { const d = new Date(n * DAY); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); }
 function isWinter(iso) { const m = Number(iso.split("-")[1]); return m >= 10 || m <= 3; }
-function shortDate(iso) { const p = iso.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("fr-BE", { day: "numeric", month: "short" }); }
+function shortDate(iso, year) { const p = iso.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("fr-BE", year ? { day: "numeric", month: "short", year: "numeric" } : { day: "numeric", month: "short" }); }
+function addMonths(n, m) { const d = new Date(n * DAY); return Math.round(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + m, Math.min(d.getUTCDate(), 28)) / DAY); }
+/* Soin saisonnier : hors saison, l'échéance glisse au premier jour de la saison suivante. */
+function seasonal(due, t, from, to) {
+  const month = n => new Date(n * DAY).getUTCMonth() + 1;
+  const inSeason = n => month(n) >= from && month(n) <= to;
+  let d = due;
+  if (d <= t && !inSeason(t)) d = t;
+  if (inSeason(d)) return d;
+  const dt = new Date(d * DAY);
+  return Math.round(Date.UTC(dt.getUTCFullYear() + (month(d) > to ? 1 : 0), from - 1, 1) / DAY);
+}
 
-/* ---------- Logique d'arrosage ---------- */
-function intervalOf(p, today) { return isWinter(today) ? p.winter : p.summer; }
-function dueDay(p, today) {
-  const base = dayNum(p.last) + intervalOf(p, today);
-  return p.snooze ? Math.max(base, dayNum(p.snooze)) : base;
+/* ---------- Rythme suggéré, quantité d'eau, météo ---------- */
+function potFactor(cm) { return cm <= 10 ? 0.8 : cm <= 14 ? 0.9 : cm <= 20 ? 1 : cm <= 28 ? 1.15 : 1.3; }
+function suggestRhythm(sp, light, pot, base) {
+  const f = (1 + 0.15 * (sp.L - light)) * potFactor(pot);
+  const clamp = v => Math.max(1, Math.min(120, Math.round(v * f)));
+  return { summer: clamp(base ? base.summer : sp.s), winter: clamp(base ? base.winter : sp.w) };
 }
-function statusOf(p, today) {
-  const due = dueDay(p, today), t = dayNum(today), last = dayNum(p.last);
-  const delta = due - t;
-  const span = Math.max(1, due - last);
-  const reserve = Math.max(0, Math.min(1, delta / span));
-  return { delta, reserve, kind: delta < 0 ? "late" : delta === 0 ? "due" : "later" };
+/* Volume d'un pot rond classique : environ 0,55 × diamètre³ (12 cm ≈ 1 l, 20 cm ≈ 4,4 l). */
+function waterAmount(p) {
+  const sp = speciesOf(p.species);
+  if (sp.soak) return "bain de 10 min";
+  const ml = 0.55 * Math.pow(p.pot, 3) * [0.12, 0.2, 0.25][sp.need - 1];
+  if (ml < 950) return "environ " + Math.max(50, Math.round(ml / 50) * 50) + " ml";
+  return "environ " + (Math.round(ml / 100) / 10).toLocaleString("fr-BE") + " l";
 }
+let wx = null; /* { at, key, days: [{ iso, tmax, rain }] } */
+function wxActive() { return !!(state.settings.weatherOn && state.settings.place && wx && wx.key === placeKey()); }
+function placeKey() { const p = state.settings.place; return p ? p.lat + "," + p.lon : ""; }
+function heatOf(today) {
+  if (!wxActive()) return null;
+  const past = wx.days.filter(d => d.iso <= today && d.tmax != null).slice(-7);
+  if (!past.length || dayNum(today) - dayNum(past[past.length - 1].iso) > 2) return null;
+  return past.reduce((a, d) => a + d.tmax, 0) / past.length;
+}
+function weatherFactor(p, today) {
+  const h = heatOf(today); if (h == null) return 1;
+  if (p.outdoor) return h >= 30 ? 0.6 : h >= 25 ? 0.75 : h < 10 ? 1.25 : 1;
+  return h >= 30 ? 0.8 : h >= 25 ? 0.9 : 1;
+}
+function lastRain(today) {
+  if (!wxActive()) return null;
+  const wet = wx.days.filter(d => d.iso <= today && d.rain >= 5);
+  return wet.length ? wet[wet.length - 1].iso : null;
+}
+
+/* ---------- Logique des soins ---------- */
+function baseInterval(p, today) { return isWinter(today) ? p.winter : p.summer; }
+function intervalOf(p, today) { return Math.max(1, Math.round(baseInterval(p, today) * weatherFactor(p, today))); }
+function lastWater(p, today) {
+  const rain = p.outdoor ? lastRain(today) : null;
+  return rain && rain > p.cares.water.last ? rain : p.cares.water.last;
+}
+function dueDay(p, k, today) {
+  const c = p.cares[k], def = CARES[k], t = dayNum(today);
+  if (!c || !c.on) return null;
+  let due;
+  if (k === "water") due = dayNum(lastWater(p, today)) + intervalOf(p, today);
+  else if (def.months) due = addMonths(dayNum(c.last), c.every);
+  else due = dayNum(c.last) + c.every;
+  if (c.snooze) due = Math.max(due, dayNum(c.snooze));
+  if (def.season) due = seasonal(due, t, def.season[0], def.season[1]);
+  return due;
+}
+function statusOf(p, k, today) {
+  const due = dueDay(p, k, today); if (due == null) return null;
+  const t = dayNum(today), delta = due - t;
+  const st = { k, due, delta, kind: delta < 0 ? "late" : delta === 0 ? "due" : "later" };
+  if (k === "water") { const span = Math.max(1, due - dayNum(lastWater(p, today))); st.reserve = Math.max(0, Math.min(1, delta / span)); }
+  return st;
+}
+function tasksOf(p, today) { return CARE_KEYS.map(k => statusOf(p, k, today)).filter(Boolean); }
 function deltaText(delta) {
   if (delta < -1) return "en retard de " + (-delta) + " j";
   if (delta === -1) return "en retard d'1 j";
   if (delta === 0) return "aujourd'hui";
   if (delta === 1) return "demain";
+  if (delta > 45) return "le " + shortDate(isoFromDay(dayNum(todayIso()) + delta), true);
   return "dans " + delta + " j";
+}
+function everyText(p, k, today) {
+  if (k === "water") return "tous les " + intervalOf(p, today) + " j";
+  return "tous les " + p.cares[k].every + (CARES[k].months ? " mois" : " j");
 }
 
 /* ---------- Stockage (à remplacer par Supabase dans la version hébergée) ---------- */
-const KEY = "basile.v1";
+const KEY = "basile.v2", OLD_KEY = "basile.v1", WX_KEY = "basile.wx";
 const store = {
-  load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } },
-  save(data) { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* stockage indisponible : l'app reste utilisable pour la session */ } }
+  read(key) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } },
+  load() { return this.read(KEY) || this.read(OLD_KEY); },
+  save(data) { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* stockage indisponible : l'app reste utilisable pour la session */ } },
+  write(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { /* idem */ } }
 };
+/* Photos : dans IndexedDB, trop lourdes pour localStorage. */
+const photoDb = {
+  db: null,
+  open() {
+    return new Promise(res => {
+      try {
+        const r = indexedDB.open("basile", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("photos", { keyPath: "id" });
+        r.onsuccess = () => { this.db = r.result; res(true); };
+        r.onerror = () => res(false);
+      } catch (e) { res(false); }
+    });
+  },
+  run(mode, fn) {
+    return new Promise((res, rej) => {
+      if (!this.db) return rej(new Error("no db"));
+      const tx = this.db.transaction("photos", mode), rq = fn(tx.objectStore("photos"));
+      tx.oncomplete = () => res(rq ? rq.result : undefined);
+      tx.onerror = tx.onabort = () => rej(tx.error);
+    });
+  },
+  put(rec) { return this.run("readwrite", s => s.put(rec)); },
+  del(id) { return this.run("readwrite", s => s.delete(id)); },
+  all() { return this.run("readonly", s => s.getAll()); }
+};
+const photoUrls = new Map();
+
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-function examples() {
-  const t = dayNum(todayIso());
-  const mk = (name, room, sp, ago) => { const s = SPECIES.find(x => x[0] === sp); return { id: uid(), name, room, species: sp, summer: s[1], winter: s[2], last: isoFromDay(t - ago), snooze: null, history: [isoFromDay(t - ago)], example: true }; };
-  const w = isWinter(todayIso());
-  return [mk("Calathea", "Chambre", "Calathea", w ? 10 : 7), mk("Monstera", "Salon", "Monstera", w ? 14 : 7), mk("Sansevieria", "Bureau", "Sansevieria", 6)];
+function defaultCares(sp, today) {
+  return {
+    water: { on: true, last: today, snooze: null, history: [today] },
+    mist: { on: !!sp.mist, every: CARES.mist.every, last: today, snooze: null },
+    fert: { on: sp.fert > 0, every: sp.fert || CARES.fert.every, last: today, snooze: null },
+    clean: { on: !!sp.clean, every: CARES.clean.every, last: today, snooze: null },
+    turn: { on: !!sp.turn, every: CARES.turn.every, last: today, snooze: null },
+    repot: { on: true, every: sp.repot, last: today, snooze: null }
+  };
 }
 function validPlant(p) {
-  return p && typeof p.name === "string" && p.name.trim() && Number.isInteger(p.summer) && p.summer > 0 && Number.isInteger(p.winter) && p.winter > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.last || "");
+  const last = p && (p.cares && p.cares.water ? p.cares.water.last : p.last);
+  return p && typeof p.name === "string" && p.name.trim() && Number.isInteger(p.summer) && p.summer > 0 && Number.isInteger(p.winter) && p.winter > 0 && ISO_RE.test(last || "");
 }
+/* Accepte une plante v1 (arrosage seul) ou v2 et rend une plante v2 complète. */
 function cleanPlant(p) {
-  return { id: String(p.id || uid()), name: p.name.trim().slice(0, 40), room: String(p.room || "").slice(0, 30), species: String(p.species || "Autre"),
-    summer: p.summer, winter: p.winter, last: p.last, snooze: /^\d{4}-\d{2}-\d{2}$/.test(p.snooze || "") ? p.snooze : null,
-    history: Array.isArray(p.history) ? p.history.filter(h => /^\d{4}-\d{2}-\d{2}$/.test(h)).slice(-12) : [p.last], example: !!p.example };
+  const species = String(p.species || "Autre"), sp = speciesOf(species);
+  const iso = (v, d) => ISO_RE.test(v || "") ? v : d;
+  const int = (v, min, max, d) => Number.isInteger(v) && v >= min && v <= max ? v : d;
+  const old = p.cares && p.cares.water ? p.cares.water : p;
+  const last = old.last, today = todayIso(), def = defaultCares(sp, today), cares = {};
+  cares.water = { on: true, last, snooze: iso(old.snooze, null),
+    history: Array.isArray(old.history) ? old.history.filter(h => ISO_RE.test(h)).slice(-12) : [last] };
+  EXTRA_KEYS.forEach(k => {
+    const c = p.cares && p.cares[k];
+    cares[k] = c ? { on: !!c.on, every: int(c.every, 1, 365, def[k].every), last: iso(c.last, today), snooze: iso(c.snooze, null) } : def[k];
+  });
+  return { id: String(p.id || uid()), name: p.name.trim().slice(0, 40), room: String(p.room || "").slice(0, 30), species,
+    latin: String(p.latin || "").slice(0, 60), summer: p.summer, winter: p.winter,
+    pot: int(p.pot, 5, 80, 15), light: int(p.light, 1, 4, sp.L), outdoor: !!p.outdoor, cares,
+    photos: Array.isArray(p.photos) ? p.photos.filter(x => x && typeof x.id === "string" && ISO_RE.test(x.date || "")).map(x => ({ id: x.id, date: x.date })) : [],
+    cover: typeof p.cover === "string" ? p.cover : null,
+    diags: Array.isArray(p.diags) ? p.diags.filter(d => d && typeof d.cause === "string").slice(-5).map(d => ({ date: iso(d.date, last), cause: String(d.cause), confidence: String(d.confidence || ""), explanation: String(d.explanation || ""), actions: Array.isArray(d.actions) ? d.actions.map(String).slice(0, 6) : [] })) : [],
+    example: !!p.example };
+}
+function examples() {
+  const t = dayNum(todayIso()), w = isWinter(todayIso());
+  const mk = (name, room, ago) => { const sp = speciesOf(name); return cleanPlant({ name, room, species: name, summer: sp.s, winter: sp.w, last: isoFromDay(t - ago), example: true }); };
+  return [mk("Calathea", "Chambre", w ? 10 : 7), mk("Monstera", "Salon", w ? 14 : 7), mk("Sansevieria", "Bureau", 6)];
+}
+function cleanSettings(s) {
+  s = s || {};
+  const pl = s.place;
+  return { weatherOn: !!s.weatherOn,
+    place: pl && typeof pl.lat === "number" && typeof pl.lon === "number" ? { lat: pl.lat, lon: pl.lon, name: String(pl.name || "Ma position").slice(0, 60) } : null,
+    visionUrl: typeof s.visionUrl === "string" ? s.visionUrl.trim() : "", visionToken: typeof s.visionToken === "string" ? s.visionToken : "" };
 }
 let state = store.load();
-if (!state || !Array.isArray(state.plants)) state = { plants: examples() };
-else state.plants = state.plants.filter(validPlant).map(cleanPlant);
-let undoSnapshot = null, toastTimer = null, editingId = null, deleteArmed = false;
+const hadStored = !!(state && Array.isArray(state.plants));
+state = hadStored ? { plants: state.plants.filter(validPlant).map(cleanPlant), settings: cleanSettings(state.settings) }
+  : { plants: examples(), settings: cleanSettings(null) };
+wx = store.read(WX_KEY);
+if (!wx || !Array.isArray(wx.days)) wx = null;
+let view = "today", sheetId = null, viewerId = null, undoSnapshot = null, toastTimer = null, editingId = null, deleteArmed = false;
 
 /* ---------- Rendu ---------- */
 const $ = id => document.getElementById(id);
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-
-function card(p, today) {
-  const s = statusOf(p, today);
-  const meta = [p.room, "tous les " + intervalOf(p, today) + " j"].filter(Boolean).join(" · ");
-  const acts = s.kind === "later"
-    ? '<button class="btn small" data-act="water" data-id="' + esc(p.id) + '">Arrosée en avance</button>'
-    : '<button class="btn primary" data-act="water" data-id="' + esc(p.id) + '">Arrosée</button><button class="btn" data-act="snooze" data-id="' + esc(p.id) + '">Terre encore humide, +2 j</button>';
-  return '<article class="card ' + s.kind + '">' +
-    '<div class="card-top"><button class="open" data-act="edit" data-id="' + esc(p.id) + '" aria-label="Modifier ' + esc(p.name) + '"><span class="name">' + esc(p.name) + '</span><span class="meta">' + esc(meta) + '</span></button>' +
-    '<span class="pill">' + deltaText(s.delta) + '</span></div>' +
-    '<div class="gauge" role="img" aria-label="Réserve d\'eau estimée : ' + Math.round(s.reserve * 100) + ' %"><i style="width:' + Math.round(s.reserve * 100) + '%"></i></div>' +
-    '<div class="gauge-label"><span>arrosée le ' + shortDate(p.last) + '</span><span>réserve ' + Math.round(s.reserve * 100) + ' %</span></div>' +
-    '<div class="actions">' + acts + '</div></article>';
+function plantById(id) { return state.plants.find(x => x.id === id); }
+function coverUrl(p) {
+  const id = p.cover && photoUrls.has(p.cover) ? p.cover : (p.photos.slice().reverse().find(x => photoUrls.has(x.id)) || {}).id;
+  return id ? photoUrls.get(id) : null;
 }
-
+function thumb(p) {
+  const url = coverUrl(p);
+  return '<span class="thumb" aria-hidden="true">' + (url ? '<img src="' + url + '" alt="">' : esc(p.name.charAt(0).toUpperCase())) + '</span>';
+}
+function gauge(st) {
+  const pct = Math.round(st.reserve * 100);
+  return '<div class="gauge" role="img" aria-label="Réserve d\'eau estimée : ' + pct + ' %"><i style="width:' + pct + '%"></i></div>';
+}
+function taskHtml(p, st) {
+  const k = st.k, id = esc(p.id);
+  const detail = k === "water" ? waterAmount(p) + " · " + deltaText(st.delta) : deltaText(st.delta);
+  const btns = k === "water"
+    ? '<button class="btn primary" data-act="done" data-care="water" data-id="' + id + '">Arrosée</button><button class="btn" data-act="snooze" data-care="water" data-id="' + id + '">Terre encore humide, +2 j</button>'
+    : '<button class="btn primary" data-act="done" data-care="' + k + '" data-id="' + id + '">Fait</button><button class="btn" data-act="snooze" data-care="' + k + '" data-id="' + id + '">Plus tard</button>';
+  return '<div class="task"><div class="task-top"><div><strong>' + CARES[k].verb + '</strong><small>' + esc(detail) + '</small></div></div>' +
+    (k === "water" ? gauge(st) : "") + '<div class="actions">' + btns + '</div></div>';
+}
+function todayCard(p, tasks) {
+  const kind = tasks.some(s => s.kind === "late") ? "late" : "due";
+  return '<article class="card ' + kind + '"><button class="open" data-act="sheet" data-id="' + esc(p.id) + '" aria-label="Fiche de ' + esc(p.name) + '">' + thumb(p) +
+    '<span><span class="name">' + esc(p.name) + '</span><span class="meta">' + esc(p.room || p.species) + '</span></span></button>' +
+    tasks.map(s => taskHtml(p, s)).join("") + '</article>';
+}
+function renderToday(today) {
+  const groups = [], soon = [];
+  state.plants.forEach(p => {
+    const all = tasksOf(p, today), due = all.filter(s => s.delta <= 0);
+    if (due.length) groups.push({ p, due, worst: Math.min.apply(null, due.map(s => s.delta)) });
+    all.filter(s => s.delta > 0 && s.delta <= 7).forEach(s => soon.push({ p, s }));
+  });
+  groups.sort((a, b) => a.worst - b.worst || a.p.name.localeCompare(b.p.name, "fr"));
+  soon.sort((a, b) => a.s.delta - b.s.delta || a.p.name.localeCompare(b.p.name, "fr"));
+  const count = groups.reduce((a, g) => a + g.due.length, 0);
+  $("summary").textContent = !state.plants.length ? "Aucune plante pour l'instant"
+    : count === 0 ? "Rien à faire aujourd'hui" : count === 1 ? "1 soin à faire" : count + " soins à faire";
+  let html = "";
+  if (!state.plants.length) html = '<div class="empty">Ajoute ta première plante avec le bouton + en bas. Choisis son type et l\'app propose ses soins.</div>';
+  if (groups.length) html += '<section><h2>À faire <span>' + count + '</span></h2>' + groups.map(g => todayCard(g.p, g.due)).join("") + '</section>';
+  if (soon.length) html += '<section><h2>Dans les 7 jours <span>' + soon.length + '</span></h2><div class="rows">' + soon.map(x =>
+    '<button class="row-item" data-act="sheet" data-id="' + esc(x.p.id) + '"><span class="grow"><span class="name" style="font-size:16px">' + esc(x.p.name) + '</span><span class="meta">' + CARES[x.s.k].verb + '</span></span><span class="pill">' + deltaText(x.s.delta) + '</span></button>').join("") + '</div></section>';
+  return html;
+}
+function renderPlants(today) {
+  $("summary").textContent = !state.plants.length ? "Aucune plante pour l'instant" : state.plants.length === 1 ? "1 plante" : state.plants.length + " plantes";
+  if (!state.plants.length) return '<div class="empty">Ajoute ta première plante avec le bouton + en bas.</div>';
+  const sorted = state.plants.slice().sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  return '<div class="rows">' + sorted.map(p => {
+    const st = statusOf(p, "water", today);
+    return '<button class="row-item" data-act="sheet" data-id="' + esc(p.id) + '">' + thumb(p) +
+      '<span class="grow"><span class="name">' + esc(p.name) + '</span><span class="meta">' + esc([p.room, p.species].filter(Boolean).join(" · ")) + '</span></span>' +
+      '<span class="pill ' + (st.kind === "later" ? "" : st.kind) + '">' + deltaText(st.delta) + '</span></button>';
+  }).join("") + '</div>';
+}
 function render() {
   const today = todayIso();
-  const sorted = state.plants.slice().sort((a, b) => dueDay(a, today) - dueDay(b, today) || a.name.localeCompare(b.name, "fr"));
-  const now = sorted.filter(p => statusOf(p, today).delta <= 0);
-  const later = sorted.filter(p => statusOf(p, today).delta > 0);
-
   $("date").textContent = new Date().toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" });
-  $("summary").textContent = !state.plants.length ? "Aucune plante pour l'instant"
-    : now.length === 0 ? "Rien à arroser aujourd'hui"
-    : now.length === 1 ? "1 plante à arroser" : now.length + " plantes à arroser";
-  $("season").textContent = isWinter(today) ? "Rythme d'hiver, arrosages espacés" : "Rythme d'été";
-
+  const chips = [isWinter(today) ? "Rythme d'hiver, arrosages espacés" : "Rythme d'été"];
+  const heat = heatOf(today);
+  if (heat != null) chips.push(state.settings.place.name + " " + Math.round(heat) + "°" + (heat >= 25 ? ", arrosages rapprochés" : ""));
+  $("chips").innerHTML = chips.map(c => '<span class="chip">' + esc(c) + '</span>').join("");
   $("notice").innerHTML = state.plants.some(p => p.example)
-    ? '<div class="notice"><span>Ces plantes marquées en exemple montrent le fonctionnement.</span><button class="link-btn" data-act="clear-examples">Retirer les exemples</button></div>' : "";
-
-  let html = "";
-  if (!state.plants.length) html = '<div class="empty">Ajoute ta première plante avec le bouton en bas. Choisis son type et l\'app propose un rythme d\'arrosage.</div>';
-  if (now.length) html += '<section><h2>À arroser <span>' + now.length + '</span></h2>' + now.map(p => card(p, today)).join("") + '</section>';
-  if (later.length) html += '<section><h2>Plus tard <span>' + later.length + '</span></h2>' + later.map(p => card(p, today)).join("") + '</section>';
-  $("list").innerHTML = html;
+    ? '<div class="notice"><span>Ces plantes sont des exemples pour montrer le fonctionnement.</span><button class="link-btn" data-act="clear-examples">Retirer les exemples</button></div>' : "";
+  $("list").innerHTML = view === "today" ? renderToday(today) : renderPlants(today);
+  document.querySelectorAll(".tab").forEach(t => { if (t.dataset.view === view) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); });
+  if ($("sheet-dialog").open) { if (plantById(sheetId)) renderSheet(); else $("sheet-dialog").close(); }
 }
 function commit() { store.save(state); render(); }
 
+/* ---------- Fiche d'une plante ---------- */
+function renderSheet() {
+  const p = plantById(sheetId); if (!p) return;
+  const today = todayIso(), sp = speciesOf(p.species), id = esc(p.id), url = coverUrl(p);
+  const cares = tasksOf(p, today).map(st => {
+    const k = st.k, extra = k === "water" ? " · " + waterAmount(p) : "";
+    return '<div class="care-line"><div class="grow"><strong>' + CARES[k].label + '</strong><small>' + esc(everyText(p, k, today) + extra) + '</small>' +
+      '<small>Prochain : ' + deltaText(st.delta) + '</small></div>' +
+      '<button class="btn small" data-act="done" data-care="' + k + '" data-id="' + id + '">' + (k === "water" ? "Arrosée" : "Fait") + '</button></div>';
+  }).join("");
+  const photos = p.photos.filter(x => photoUrls.has(x.id)).slice().reverse();
+  const diags = p.diags.slice().reverse().map(d =>
+    '<div class="diag"><strong>' + esc(d.cause) + '</strong><small>' + shortDate(d.date, true) + (d.confidence ? " · confiance " + esc(d.confidence) : "") + '</small>' +
+    (d.explanation ? '<span>' + esc(d.explanation) + '</span>' : "") +
+    (d.actions.length ? '<ul>' + d.actions.map(a => '<li>' + esc(a) + '</li>').join("") + '</ul>' : "") + '</div>').join("");
+  $("sheet").innerHTML =
+    '<div class="sheet-head"><h3>' + esc(p.name) + '</h3><button type="button" class="btn small" data-act="close-sheet">Fermer</button></div>' +
+    (url ? '<img class="cover" src="' + url + '" alt="Photo de ' + esc(p.name) + '">' : "") +
+    '<span class="meta">' + esc([p.species, p.latin, p.room].filter(Boolean).join(" · ")) + '</span>' +
+    '<h4>Soins</h4><div>' + cares + '</div>' +
+    '<h4>Fiche d\'entretien</h4><dl class="facts">' +
+      '<dt>Lumière</dt><dd>' + esc(sp.light) + '</dd>' +
+      '<dt>Eau</dt><dd>' + esc(sp.tip) + '</dd>' +
+      '<dt>Humidité</dt><dd>' + esc(sp.hum) + '</dd>' +
+      '<dt>Toxicité</dt><dd>' + esc(sp.tox) + '</dd>' +
+      '<dt>Chez toi</dt><dd>' + esc("Lumière " + LIGHTS[p.light].toLowerCase() + ", pot de " + p.pot + " cm" + (p.outdoor ? ", dehors" : "")) + '</dd></dl>' +
+    '<h4>Journal photo</h4>' +
+    (photoDb.db ? (photos.length ? '<div class="photos">' + photos.map(x => '<button data-act="photo" data-photo="' + esc(x.id) + '" aria-label="Photo du ' + shortDate(x.date, true) + '"><img src="' + photoUrls.get(x.id) + '" alt=""><small>' + shortDate(x.date, true) + '</small></button>').join("") + '</div>'
+      : '<small class="hint">Prends une photo de temps en temps pour suivre sa croissance.</small>') +
+      '<div class="actions"><button class="btn" data-act="add-photo" data-id="' + id + '">Ajouter une photo</button></div>'
+      : '<small class="hint">Ce navigateur ne permet pas d\'enregistrer des photos.</small>') +
+    '<h4>Diagnostic</h4><small class="hint">Une feuille abîmée ? Prends-la en photo pour connaître la cause probable.</small>' +
+    '<div class="actions"><button class="btn" data-act="diagnose" data-id="' + id + '" id="diag-btn">Diagnostiquer avec une photo</button></div>' +
+    '<p class="error" id="diag-msg" hidden></p>' + diags +
+    '<h4>Derniers arrosages</h4><ul class="history">' + p.cares.water.history.slice().reverse().map(h => "<li>" + shortDate(h) + "</li>").join("") + '</ul>' +
+    '<hr><div class="actions"><button class="btn primary" data-act="edit" data-id="' + id + '">Modifier</button></div>';
+}
+function openSheet(id) { sheetId = id; renderSheet(); if (!$("sheet-dialog").open) $("sheet-dialog").showModal(); $("sheet-dialog").scrollTop = 0; }
+
 /* ---------- Actions ---------- */
-function showToast(text) {
-  $("toast-text").textContent = text; $("toast").hidden = false;
+function showToast(text, noUndo) {
+  $("toast-text").textContent = text; $("undo").hidden = !!noUndo; $("toast").hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("toast").hidden = true; undoSnapshot = null; }, 6000);
 }
 function remember() { undoSnapshot = JSON.stringify(state); }
-function water(id) {
-  const p = state.plants.find(x => x.id === id); if (!p) return;
+function done(id, k) {
+  const p = plantById(id); if (!p) return;
   remember();
-  const t = todayIso();
-  p.last = t; p.snooze = null;
-  if (p.history[p.history.length - 1] !== t) p.history.push(t);
-  p.history = p.history.slice(-12);
+  const t = todayIso(), c = p.cares[k];
+  c.last = t; c.snooze = null;
+  if (k === "water") { if (c.history[c.history.length - 1] !== t) c.history.push(t); c.history = c.history.slice(-12); }
   commit();
-  showToast(p.name + " arrosée. Prochain arrosage " + deltaText(statusOf(p, t).delta) + ".");
+  const next = statusOf(p, k, t);
+  showToast(p.name + " " + CARES[k].done + ". " + (k === "repot" ? "Pense à mettre à jour le diamètre du pot." : "Prochaine fois " + deltaText(next.delta) + "."));
 }
-function snooze(id) {
-  const p = state.plants.find(x => x.id === id); if (!p) return;
+function snooze(id, k) {
+  const p = plantById(id); if (!p) return;
   remember();
-  p.snooze = isoFromDay(dayNum(todayIso()) + 2);
+  const n = CARES[k].snooze;
+  p.cares[k].snooze = isoFromDay(dayNum(todayIso()) + n);
   commit();
-  showToast(p.name + " reportée de 2 jours.");
+  showToast(CARES[k].label + " de " + p.name + " : reporté de " + n + " j.");
 }
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const act = el.dataset.act, id = el.dataset.id;
-  if (act === "water") water(id);
-  else if (act === "snooze") snooze(id);
+  if (act === "done") done(id, el.dataset.care);
+  else if (act === "snooze") snooze(id, el.dataset.care);
+  else if (act === "sheet") openSheet(id);
+  else if (act === "close-sheet") $("sheet-dialog").close();
   else if (act === "edit") openPlant(id);
+  else if (act === "view") { view = el.dataset.view; render(); window.scrollTo(0, 0); }
+  else if (act === "add-photo") pickPhoto(blob => addPhoto(id, blob));
+  else if (act === "photo") openViewer(el.dataset.photo);
+  else if (act === "diagnose") pickPhoto(blob => diagnose(id, blob));
+  else if (act === "open-settings") openSettings();
   else if (act === "clear-examples") { remember(); state.plants = state.plants.filter(p => !p.example); commit(); showToast("Exemples retirés."); }
 });
 $("undo").addEventListener("click", () => {
@@ -333,83 +691,302 @@ $("undo").addEventListener("click", () => {
 document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
 document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
 
-/* ---------- Fiche plante ---------- */
-$("f-species").innerHTML = SPECIES.map(s => '<option value="' + esc(s[0]) + '">' + esc(s[0]) + '</option>').join("");
-function showTip(name) { const s = SPECIES.find(x => x[0] === name); $("f-tip").hidden = !s; if (s) $("f-tip").textContent = s[3]; }
+/* ---------- Photos ---------- */
+let photoCallback = null;
+function pickPhoto(cb) { photoCallback = cb; $("photo-input").value = ""; $("photo-input").click(); }
+$("photo-input").addEventListener("change", async () => {
+  const file = $("photo-input").files[0], cb = photoCallback; photoCallback = null;
+  if (!file || !cb) return;
+  try { cb(await shrink(file)); } catch (e) { showToast("Cette image n'a pas pu être lue.", true); }
+});
+/* Réduit la photo à 1280 px de côté au plus, en JPEG : assez pour le journal et pour le modèle de vision. */
+async function shrink(file) {
+  let src;
+  try { src = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch (e) {
+    src = await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
+  }
+  const k = Math.min(1, 1280 / Math.max(src.width, src.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(src.width * k); canvas.height = Math.round(src.height * k);
+  canvas.getContext("2d").drawImage(src, 0, 0, canvas.width, canvas.height);
+  return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error("toBlob")), "image/jpeg", 0.82));
+}
+async function addPhoto(plantId, blob) {
+  const p = plantById(plantId); if (!p) return;
+  const rec = { id: uid(), plantId, date: todayIso(), blob };
+  try { await photoDb.put(rec); } catch (e) { showToast("La photo n'a pas pu être enregistrée.", true); return; }
+  photoUrls.set(rec.id, URL.createObjectURL(blob));
+  p.photos.push({ id: rec.id, date: rec.date });
+  commit();
+}
+function openViewer(photoId) {
+  const p = plantById(sheetId), ph = p && p.photos.find(x => x.id === photoId); if (!ph) return;
+  viewerId = photoId;
+  $("v-img").src = photoUrls.get(photoId); $("v-date").textContent = shortDate(ph.date, true);
+  $("v-delete").textContent = "Supprimer"; $("v-delete").dataset.armed = "";
+  $("viewer-dialog").showModal();
+}
+$("v-cover").addEventListener("click", () => { const p = plantById(sheetId); if (!p) return; p.cover = viewerId; $("viewer-dialog").close(); commit(); });
+$("v-delete").addEventListener("click", () => {
+  const b = $("v-delete");
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Confirmer la suppression"; return; }
+  const p = plantById(sheetId); if (!p) return;
+  p.photos = p.photos.filter(x => x.id !== viewerId);
+  if (p.cover === viewerId) p.cover = null;
+  photoDb.del(viewerId).catch(() => {});
+  URL.revokeObjectURL(photoUrls.get(viewerId)); photoUrls.delete(viewerId);
+  $("viewer-dialog").close(); commit();
+});
+
+/* ---------- Vision : identification et diagnostic, via la fonction du serveur ---------- */
+function blobToBase64(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function vision(task, blob, context) {
+  const s = state.settings;
+  if (!s.visionUrl) throw new Error("config");
+  let resp;
+  try {
+    resp = await fetch(s.visionUrl, { method: "POST", headers: { "Content-Type": "application/json", "X-Basile-Token": s.visionToken },
+      body: JSON.stringify({ task, image: await blobToBase64(blob), context }) });
+  } catch (e) { throw new Error("network"); }
+  if (resp.status === 401 || resp.status === 403) throw new Error("auth");
+  if (!resp.ok) throw new Error("server");
+  return resp.json();
+}
+function visionError(e) {
+  return e.message === "config" ? "Les photos intelligentes passent par ton serveur. Renseigne son adresse dans les réglages."
+    : e.message === "auth" ? "Le serveur a refusé le mot de passe. Vérifie-le dans les réglages."
+    : e.message === "network" ? "Serveur injoignable. Vérifie ta connexion et l'adresse dans les réglages."
+    : "L'analyse a échoué. Réessaie avec une photo plus nette.";
+}
+async function diagnose(id, blob) {
+  const p = plantById(id); if (!p) return;
+  const today = todayIso(), btn = $("diag-btn"), msg = $("diag-msg");
+  const say = t => { const m = $("diag-msg"); if (m) { m.textContent = t; m.hidden = !t; } };
+  if (btn) { btn.disabled = true; btn.textContent = "Analyse en cours…"; }
+  if (msg) msg.hidden = true;
+  try {
+    const r = await vision("diagnose", blob, { species: p.species, latin: p.latin, room: p.room, light: LIGHTS[p.light], outdoor: p.outdoor, pot_cm: p.pot,
+      watering_every_days: intervalOf(p, today), days_since_watering: dayNum(today) - dayNum(p.cares.water.last), season: isWinter(today) ? "hiver" : "été", date: today });
+    if (!r || typeof r.cause !== "string") throw new Error("server");
+    const q = plantById(id); if (!q) return;
+    q.diags.push({ date: today, cause: r.cause.slice(0, 120), confidence: String(r.confidence || ""), explanation: String(r.explanation || "").slice(0, 600),
+      actions: Array.isArray(r.actions) ? r.actions.map(a => String(a).slice(0, 200)).slice(0, 6) : [] });
+    q.diags = q.diags.slice(-5);
+    commit();
+  } catch (e) {
+    const b = $("diag-btn"); if (b) { b.disabled = false; b.textContent = "Diagnostiquer avec une photo"; }
+    say(visionError(e));
+  }
+}
+
+/* ---------- Formulaire plante ---------- */
+let formPhoto = null, formBase = null, formLatin = "", rhythmDirty = false;
+$("f-species").innerHTML = SPECIES.map(s => '<option value="' + esc(s.n) + '">' + esc(s.n) + '</option>').join("");
+function formSuggestion() {
+  const pot = parseInt($("f-pot").value, 10);
+  return suggestRhythm(speciesOf($("f-species").value), parseInt($("f-light").value, 10), pot >= 5 && pot <= 80 ? pot : 15, formBase);
+}
+function refreshSuggestion() {
+  const sg = formSuggestion();
+  if (!rhythmDirty) { $("f-summer").value = sg.summer; $("f-winter").value = sg.winter; }
+  const same = parseInt($("f-summer").value, 10) === sg.summer && parseInt($("f-winter").value, 10) === sg.winter;
+  $("f-suggest").innerHTML = same ? "Rythme suggéré selon le type, la lumière et le pot. Tu peux l'ajuster."
+    : "Rythme suggéré : " + sg.summer + " j en été, " + sg.winter + " j en hiver. <button type=\"button\" class=\"link-btn\" id=\"f-apply\">Appliquer</button>";
+}
+function showTip() { $("f-tip").textContent = speciesOf($("f-species").value).tip; $("f-tip").hidden = false; }
+function fillCares(cares) {
+  EXTRA_KEYS.forEach(k => { $("f-on-" + k).checked = cares[k].on; $("f-ev-" + k).value = cares[k].every; });
+}
+function identMsg(text) { $("f-ident").textContent = text; $("f-ident").hidden = !text; }
 function openPlant(id) {
-  const p = id ? state.plants.find(x => x.id === id) : null;
-  editingId = p ? p.id : null; deleteArmed = false;
+  const p = id ? plantById(id) : null, today = todayIso();
+  editingId = p ? p.id : null; deleteArmed = false; formPhoto = null; formBase = null; formLatin = p ? p.latin : "";
   $("plant-title").textContent = p ? "Modifier la plante" : "Nouvelle plante";
-  const sp = p ? (SPECIES.some(s => s[0] === p.species) ? p.species : "Autre") : SPECIES[0][0];
-  const ref = SPECIES.find(s => s[0] === sp);
-  $("f-species").value = sp;
+  const sp = speciesOf(p ? p.species : SPECIES[0].n);
+  $("f-species").value = sp.n;
   $("f-name").value = p ? p.name : "";
   $("f-room").value = p ? p.room : "";
-  $("f-summer").value = p ? p.summer : ref[1];
-  $("f-winter").value = p ? p.winter : ref[2];
-  $("f-last").value = p ? p.last : todayIso();
-  $("f-last").max = todayIso();
+  $("f-light").value = p ? p.light : sp.L;
+  $("f-pot").value = p ? p.pot : 15;
+  $("f-outdoor").checked = p ? p.outdoor : false;
+  $("f-last").value = p ? p.cares.water.last : today; $("f-last").max = today;
+  $("f-repot-last").value = p ? p.cares.repot.last : ""; $("f-repot-last").max = today;
+  fillCares(p ? p.cares : defaultCares(sp, today));
+  rhythmDirty = false;
+  if (p) { const sg = formSuggestion(); rhythmDirty = sg.summer !== p.summer || sg.winter !== p.winter; $("f-summer").value = p.summer; $("f-winter").value = p.winter; }
+  refreshSuggestion(); showTip(); identMsg("");
   $("f-error").hidden = true;
+  $("f-identify").disabled = false; $("f-identify").textContent = "Identifier avec une photo";
   $("f-delete").hidden = !p; $("f-delete").textContent = "Supprimer";
-  $("f-history-wrap").hidden = !p;
-  if (p) $("f-history").innerHTML = p.history.slice().reverse().map(h => "<li>" + shortDate(h) + "</li>").join("");
-  showTip(sp);
-  $("plant-dialog").showModal();
+  $("plant-dialog").showModal(); $("plant-dialog").scrollTop = 0;
 }
 $("f-species").addEventListener("change", () => {
-  const s = SPECIES.find(x => x[0] === $("f-species").value);
-  $("f-summer").value = s[1]; $("f-winter").value = s[2]; showTip(s[0]);
+  const sp = speciesOf($("f-species").value);
+  formBase = null; formLatin = ""; rhythmDirty = false;
+  $("f-light").value = sp.L; fillCares(defaultCares(sp, todayIso()));
+  refreshSuggestion(); showTip();
 });
+["f-light", "f-pot"].forEach(id => $(id).addEventListener("input", refreshSuggestion));
+["f-summer", "f-winter"].forEach(id => $(id).addEventListener("input", () => { rhythmDirty = true; refreshSuggestion(); }));
+$("f-suggest").addEventListener("click", e => { if (e.target.id === "f-apply") { rhythmDirty = false; refreshSuggestion(); } });
+$("f-identify").addEventListener("click", () => pickPhoto(async blob => {
+  const btn = $("f-identify");
+  formPhoto = blob;
+  btn.disabled = true; btn.textContent = "Identification en cours…"; identMsg("");
+  try {
+    const r = await vision("identify", blob, { species_list: SPECIES.map(s => s.n) });
+    if (!r || typeof r.match !== "string") throw new Error("server");
+    const sp = speciesOf(r.match), days = v => Number.isInteger(v) && v >= 1 && v <= 120;
+    $("f-species").value = sp.n;
+    formBase = sp.n === "Autre" && days(r.summer_days) && days(r.winter_days) ? { summer: r.summer_days, winter: r.winter_days } : null;
+    formLatin = String(r.latin_name || "").slice(0, 60); rhythmDirty = false;
+    $("f-light").value = sp.L; fillCares(defaultCares(sp, todayIso()));
+    if (!$("f-name").value.trim() && r.common_name) $("f-name").value = String(r.common_name).slice(0, 40);
+    refreshSuggestion(); showTip();
+    identMsg([[r.common_name, formLatin].filter((v, i, l) => v && l.indexOf(v) === i).join(", "), r.confidence ? "confiance " + r.confidence : "", "Rythme réglé, photo gardée pour le journal."].filter(Boolean).join(". ") + (r.note ? " " + r.note : ""));
+  } catch (e) { identMsg(visionError(e) + " La photo est gardée pour le journal."); }
+  btn.disabled = false; btn.textContent = "Identifier avec une autre photo";
+}));
 $("add").addEventListener("click", () => openPlant(null));
 $("plant-form").addEventListener("submit", e => {
   e.preventDefault();
-  const species = $("f-species").value;
+  const today = todayIso(), species = $("f-species").value;
   const name = $("f-name").value.trim() || (species === "Autre" ? "" : species);
-  const summer = parseInt($("f-summer").value, 10), winter = parseInt($("f-winter").value, 10), last = $("f-last").value;
+  const num = id => parseInt($(id).value, 10);
+  const summer = num("f-summer"), winter = num("f-winter"), pot = num("f-pot"), last = $("f-last").value, repotLast = $("f-repot-last").value;
+  const cares = {};
+  EXTRA_KEYS.forEach(k => { cares[k] = { on: $("f-on-" + k).checked, every: num("f-ev-" + k) }; });
   let err = "";
   if (!name) err = "Donne un nom à ta plante.";
-  else if (!(summer >= 1 && summer <= 120) || !(winter >= 1 && winter <= 120)) err = "Le rythme doit être compris entre 1 et 120 jours.";
-  else if (!/^\d{4}-\d{2}-\d{2}$/.test(last) || dayNum(last) > dayNum(todayIso())) err = "Choisis une date de dernier arrosage, aujourd'hui au plus tard.";
+  else if (!(pot >= 5 && pot <= 80)) err = "Le diamètre du pot doit être compris entre 5 et 80 cm.";
+  else if (!(summer >= 1 && summer <= 120) || !(winter >= 1 && winter <= 120)) err = "Le rythme d'arrosage doit être compris entre 1 et 120 jours.";
+  else if (!ISO_RE.test(last) || dayNum(last) > dayNum(today)) err = "Choisis une date de dernier arrosage, aujourd'hui au plus tard.";
+  else if (repotLast && (!ISO_RE.test(repotLast) || dayNum(repotLast) > dayNum(today))) err = "La date de dernier rempotage ne peut pas être dans le futur.";
+  else if (EXTRA_KEYS.some(k => cares[k].on && !(cares[k].every >= 1 && cares[k].every <= 365))) err = "Dans « Autres soins », donne un rythme à chaque soin activé.";
   if (err) { $("f-error").textContent = err; $("f-error").hidden = false; return; }
-  const room = $("f-room").value.trim();
-  if (editingId) {
-    const p = state.plants.find(x => x.id === editingId);
-    if (p.last !== last) { p.snooze = null; p.history = p.history.filter(h => h !== p.last); p.history.push(last); p.history.sort(); p.history = p.history.slice(-12); }
-    Object.assign(p, { name, room, species, summer, winter, last, example: false });
-  } else {
-    state.plants.push({ id: uid(), name, room, species, summer, winter, last, snooze: null, history: [last], example: false });
+  let p = editingId ? plantById(editingId) : null;
+  if (!p) {
+    p = cleanPlant({ name, species, summer, winter, last });
+    state.plants.push(p);
+  } else if (p.cares.water.last !== last) {
+    const w = p.cares.water;
+    w.history = w.history.filter(h => h !== w.last); w.history.push(last); w.history.sort(); w.history = w.history.slice(-12);
+    w.last = last; w.snooze = null;
   }
+  Object.assign(p, { name, room: $("f-room").value.trim(), species, latin: formLatin, summer, winter, pot, light: num("f-light"), outdoor: $("f-outdoor").checked, example: false });
+  EXTRA_KEYS.forEach(k => {
+    const c = p.cares[k];
+    if (cares[k].on && !c.on) { c.last = k === "repot" ? c.last : today; c.snooze = null; }
+    c.on = cares[k].on;
+    if (cares[k].every >= 1) c.every = cares[k].every;
+  });
+  if (repotLast && repotLast !== p.cares.repot.last) { p.cares.repot.last = repotLast; p.cares.repot.snooze = null; }
   $("plant-dialog").close(); commit();
+  if (formPhoto && photoDb.db) addPhoto(p.id, formPhoto);
+  formPhoto = null;
 });
 $("f-delete").addEventListener("click", () => {
   if (!deleteArmed) { deleteArmed = true; $("f-delete").textContent = "Confirmer la suppression"; return; }
   remember();
-  const p = state.plants.find(x => x.id === editingId);
+  const p = plantById(editingId);
   state.plants = state.plants.filter(x => x.id !== editingId);
   $("plant-dialog").close(); commit();
   showToast((p ? p.name : "Plante") + " supprimée.");
 });
 
+/* ---------- Météo (Open-Meteo, sans clé) ---------- */
+async function refreshWeather(force) {
+  const s = state.settings;
+  if (!s.weatherOn || !s.place) return;
+  if (!force && wx && wx.key === placeKey() && Date.now() - wx.at < 3 * 3600000) return;
+  try {
+    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=" + s.place.lat + "&longitude=" + s.place.lon +
+      "&daily=temperature_2m_max,precipitation_sum&past_days=7&forecast_days=3&timezone=auto");
+    if (!r.ok) return;
+    const d = (await r.json()).daily;
+    wx = { at: Date.now(), key: placeKey(), days: d.time.map((iso, i) => ({ iso, tmax: d.temperature_2m_max[i], rain: d.precipitation_sum[i] || 0 })) };
+    store.write(WX_KEY, wx); render();
+  } catch (e) { /* hors ligne : on garde la dernière météo connue */ }
+}
+function wxMsg(text) { $("s-wx-msg").textContent = text; $("s-wx-msg").hidden = !text; }
+function showPlace() { const p = state.settings.place; $("s-place").textContent = p ? "Lieu : " + p.name : "Aucun lieu choisi. Cherche ta ville ou utilise ta position."; }
+function setPlace(place) {
+  state.settings.place = { lat: Math.round(place.lat * 100) / 100, lon: Math.round(place.lon * 100) / 100, name: place.name };
+  state.settings.weatherOn = true; $("s-wx-on").checked = true;
+  $("s-city-results").innerHTML = ""; wxMsg(""); showPlace(); commit(); refreshWeather(true);
+}
+$("s-wx-on").addEventListener("change", () => {
+  state.settings.weatherOn = $("s-wx-on").checked;
+  if (state.settings.weatherOn && !state.settings.place) wxMsg("Choisis un lieu pour activer la météo.");
+  else wxMsg("");
+  commit(); refreshWeather(true);
+});
+let cityResults = [];
+$("s-city-go").addEventListener("click", async () => {
+  const q = $("s-city").value.trim(); if (!q) return;
+  wxMsg(""); $("s-city-results").innerHTML = "";
+  try {
+    const r = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=4&language=fr&name=" + encodeURIComponent(q));
+    cityResults = ((await r.json()).results || []).map(c => ({ lat: c.latitude, lon: c.longitude, name: c.name, where: [c.admin1, c.country].filter(Boolean).join(", ") }));
+    if (!cityResults.length) { wxMsg("Aucune ville trouvée à ce nom."); return; }
+    $("s-city-results").innerHTML = cityResults.map((c, i) => '<button type="button" class="btn small" data-city="' + i + '">' + esc(c.name + (c.where ? " (" + c.where + ")" : "")) + '</button>').join("");
+  } catch (e) { wxMsg("Recherche impossible. Vérifie ta connexion."); }
+});
+$("s-city").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("s-city-go").click(); } });
+$("s-city-results").addEventListener("click", e => { const b = e.target.closest("[data-city]"); if (b) setPlace(cityResults[Number(b.dataset.city)]); });
+$("s-geo").addEventListener("click", () => {
+  if (!navigator.geolocation) { wxMsg("Ce navigateur ne donne pas accès à la position."); return; }
+  wxMsg("");
+  navigator.geolocation.getCurrentPosition(
+    pos => setPlace({ lat: pos.coords.latitude, lon: pos.coords.longitude, name: "Ma position" }),
+    () => wxMsg("Position refusée ou indisponible. Cherche plutôt ta ville."), { timeout: 10000, maximumAge: 3600000 });
+});
+["s-vurl", "s-vtoken"].forEach(id => $(id).addEventListener("change", () => {
+  state.settings.visionUrl = $("s-vurl").value.trim(); state.settings.visionToken = $("s-vtoken").value; store.save(state);
+}));
+
 /* ---------- Réglages : sauvegarde ---------- */
 function settingsMsg(text) { $("s-msg").textContent = text; $("s-msg").hidden = false; }
-$("open-settings").addEventListener("click", () => { $("s-msg").hidden = true; $("s-data").value = ""; $("settings-dialog").showModal(); });
+function openSettings() {
+  $("s-msg").hidden = true; $("s-data").value = ""; wxMsg(""); $("s-city-results").innerHTML = "";
+  $("s-wx-on").checked = state.settings.weatherOn; showPlace();
+  $("s-vurl").value = state.settings.visionUrl; $("s-vtoken").value = state.settings.visionToken;
+  $("settings-dialog").showModal(); $("settings-dialog").scrollTop = 0;
+}
+$("open-settings").addEventListener("click", openSettings);
 $("s-export").addEventListener("click", () => {
   const json = JSON.stringify({ plants: state.plants });
   $("s-data").value = json;
-  const done = () => settingsMsg("Sauvegarde copiée. Garde-la dans une note.");
+  const ok = () => settingsMsg("Sauvegarde copiée. Garde-la dans une note.");
   const manual = () => { $("s-data").select(); settingsMsg("Copie le texte sélectionné ci-dessus."); };
-  try { navigator.clipboard.writeText(json).then(done, manual); } catch (e) { manual(); }
+  try { navigator.clipboard.writeText(json).then(ok, manual); } catch (e) { manual(); }
 });
 $("s-import").addEventListener("click", () => {
   let data; try { data = JSON.parse($("s-data").value); } catch (e) { data = null; }
   const plants = data && Array.isArray(data.plants) ? data.plants.filter(validPlant).map(cleanPlant) : [];
   if (!plants.length) { settingsMsg("Ce texte n'est pas une sauvegarde valide. Colle le texte obtenu avec « Copier mes plantes »."); return; }
-  remember(); state = { plants }; $("settings-dialog").close(); commit();
+  remember(); state.plants = plants; $("settings-dialog").close(); commit();
   showToast(plants.length + (plants.length > 1 ? " plantes importées." : " plante importée."));
 });
 
+/* ---------- Démarrage ---------- */
 render();
-document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+refreshWeather(false);
+photoDb.open().then(async ok => {
+  if (!ok) return;
+  try {
+    const known = new Set(); state.plants.forEach(p => p.photos.forEach(x => known.add(x.id)));
+    (await photoDb.all()).forEach(rec => {
+      if (known.has(rec.id)) photoUrls.set(rec.id, URL.createObjectURL(rec.blob));
+      else if (hadStored && !undoSnapshot) photoDb.del(rec.id).catch(() => {}); /* photo d'une plante supprimée */
+    });
+  } catch (e) { /* photos illisibles : l'app reste utilisable sans */ }
+  render();
+});
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { render(); refreshWeather(false); } });
 </script>
 </body>
 </html>
